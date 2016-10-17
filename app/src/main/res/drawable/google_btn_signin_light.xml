@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:drawable="@drawable/btn_google_signin_light_normal">
+        <bitmap android:src="@drawable/btn_google_signin_light_normal" />
+    </item>
+    <item android:drawable="@drawable/btn_google_signin_light_pressed" android:state_focused="false" android:state_pressed="true">
+        <bitmap android:src="@drawable/btn_google_signin_light_pressed" />
+    </item>
+    <item android:drawable="@drawable/btn_google_signin_light_focus" android:state_focused="true" android:state_pressed="false">
+        <bitmap android:src="@drawable/btn_google_signin_light_focus" />
+    </item>
+    <item android:drawable="@drawable/btn_google_signin_light_focus" android:state_focused="true" android:state_pressed="false" />
+</selector>
