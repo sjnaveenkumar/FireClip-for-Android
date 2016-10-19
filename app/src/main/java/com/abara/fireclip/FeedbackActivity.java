@@ -1,6 +1,10 @@
 package com.abara.fireclip;
 
+import android.content.Intent;
+import android.content.SharedPreferences;
+import android.net.Uri;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.Snackbar;
@@ -22,14 +26,18 @@ import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ServerValue;
+import com.jaredrummler.android.device.DeviceName;
 
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
 /**
  * Created by abara on 11/10/16.
  */
-public class FeedbackActivity extends AppCompatActivity implements View.OnClickListener {
+public class FeedbackActivity extends AppCompatActivity implements View.OnClickListener, View.OnLongClickListener {
+
+    private static final String GITHUB_ANDROID_REPO = "https://github.com/lvabarajithan/FireClip-for-Android";
 
     private AppCompatButton sendBtn;
     private TextInputEditText feedbackBox;
@@ -56,6 +64,7 @@ public class FeedbackActivity extends AppCompatActivity implements View.OnClickL
 
         sendBtn.setOnClickListener(this);
         githubImg.setOnClickListener(this);
+        githubImg.setOnLongClickListener(this);
 
     }
 
@@ -74,8 +83,9 @@ public class FeedbackActivity extends AppCompatActivity implements View.OnClickL
                 }
                 break;
             case R.id.feedback_github:
-                Snackbar.make(findViewById(R.id.feedback_rootview), "Github page hasn't still established.", Snackbar.LENGTH_LONG)
-                        .show();
+                Intent githubIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(GITHUB_ANDROID_REPO));
+                startActivity(githubIntent);
+                Toast.makeText(this, "Long press to add to favourites, and directly open the repository from desktop.", Toast.LENGTH_LONG).show();
                 break;
         }
 
@@ -115,5 +125,23 @@ public class FeedbackActivity extends AppCompatActivity implements View.OnClickL
                 return true;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public boolean onLongClick(View v) {
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+        DatabaseReference favRef = FirebaseDatabase.getInstance().getReference("users").child(clipUser.getUid()).child("fav");
+        DatabaseReference newFavRef = favRef.push();
+        String key = newFavRef.getKey();
+        String deviceName = prefs.getString(Utils.DEVICE_NAME_KEY, DeviceName.getDeviceName());
+        Map<String, Object> favMap = Utils.generateFavMapClip(GITHUB_ANDROID_REPO, deviceName, new Date().getTime(), key);
+
+        newFavRef.setValue(favMap).addOnCompleteListener(new OnCompleteListener<Void>() {
+            @Override
+            public void onComplete(@NonNull Task<Void> task) {
+                Toast.makeText(FeedbackActivity.this, "Repo link added to favourites!", Toast.LENGTH_SHORT).show();
+            }
+        });
+        return true;
     }
 }
