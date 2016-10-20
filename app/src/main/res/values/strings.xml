@@ -27,7 +27,7 @@
     <string name="signin_greet">Signin</string>
     <string name="intro_greet_description">Sign In to get started.</string>
     <string name="intro_login_button_text">Sign In with Email</string>
-    <string name="signup_greet">Create your account</string>
+    <string name="signup_greet">Create your\naccount</string>
     <string name="device_name_head">Name this device</string>
     <string name="device_name_input_text_hint">New Device</string>
     <string name="device_name_next_button_text"><![CDATA[Next >]]></string>
