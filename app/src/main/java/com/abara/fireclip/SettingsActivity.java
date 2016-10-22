@@ -101,14 +101,6 @@ public class SettingsActivity extends AppCompatActivity implements View.OnClickL
         switch (v.getId()) {
             case R.id.settings_enable_layout:
                 toogleSwitch(enableSwitch);
-                boolean checked = enableSwitch.isChecked();
-                if (checked) {
-                    startService(new Intent(this, ClipboardService.class));
-                } else {
-                    stopService(new Intent(this, ClipboardService.class));
-                }
-                autoAcceptSwitch.setEnabled(checked);
-                autoAcceptLayout.setClickable(checked);
                 break;
             case R.id.settings_auto_accept_layout:
                 toogleSwitch(autoAcceptSwitch);
@@ -132,10 +124,19 @@ public class SettingsActivity extends AppCompatActivity implements View.OnClickL
     public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
 
         String key = Utils.ENABLE_SERVICE_KEY;
+        int id = buttonView.getId();
 
-        switch (buttonView.getId()) {
+        switch (id) {
             case R.id.settings_enable_switch:
                 key = Utils.ENABLE_SERVICE_KEY;
+                boolean checked = enableSwitch.isChecked();
+                if (checked) {
+                    startService(new Intent(this, ClipboardService.class));
+                } else {
+                    stopService(new Intent(this, ClipboardService.class));
+                }
+                autoAcceptSwitch.setEnabled(checked);
+                autoAcceptLayout.setClickable(checked);
                 break;
             case R.id.settings_auto_accept_switch:
                 key = Utils.AUTO_ACCEPT_KEY;

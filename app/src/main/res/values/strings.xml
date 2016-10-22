@@ -58,5 +58,8 @@
     <string name="feedback_dev_title">Are you a developer?</string>
     <string name="feedback_dev_desc">FireClip is opensource. Join with us and improve the user experience.</string>
     <string name="settings_text">Settings</string>
+    <string name="invitation_title">Invite Friends</string>
+    <string name="invitation_message">Hey checkout FireClip. It\'s an Universal clipboard app which will increase your productivity!\nhttps://goo.gl/zZEPGh</string>
+    <string name="invitation_title_chooser">Send to</string>
 
 </resources>

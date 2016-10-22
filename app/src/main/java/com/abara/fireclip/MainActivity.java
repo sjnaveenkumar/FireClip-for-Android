@@ -199,9 +199,17 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         switch (item.getItemId()) {
             case R.id.ic_nav_action_settings:
                 startActivity(new Intent(this, SettingsActivity.class));
-                drawerLayout.closeDrawer(navigationView);
+                break;
+            case R.id.ic_nav_action_invite:
+                Intent inviteIntent = new Intent();
+                inviteIntent.setAction(Intent.ACTION_SEND);
+                inviteIntent.putExtra(Intent.EXTRA_TEXT, getResources().getString(R.string.invitation_message));
+                inviteIntent.setType("text/plain");
+                startActivity(Intent.createChooser(inviteIntent, getResources().getString(R.string.invitation_title_chooser)));
                 break;
         }
+        drawerLayout.closeDrawer(navigationView);
         return true;
     }
+
 }

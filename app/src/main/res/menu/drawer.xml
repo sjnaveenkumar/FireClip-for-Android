@@ -6,6 +6,10 @@
             android:id="@+id/ic_nav_action_settings"
             android:icon="@drawable/ic_action_settings"
             android:title="@string/settings_text" />
+        <item
+            android:id="@+id/ic_nav_action_invite"
+            android:icon="@drawable/ic_action_invite"
+            android:title="@string/invitation_title" />
     </group>
 
 </menu>

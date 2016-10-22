@@ -146,7 +146,7 @@ public class ClipboardService extends Service {
                                 builder.setSound(RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION));
                                 builder.setPriority(NotificationCompat.PRIORITY_HIGH);
                                 builder.setDefaults(NotificationCompat.DEFAULT_VIBRATE);
-                                builder.setSmallIcon(R.mipmap.ic_launcher);
+                                builder.setSmallIcon(R.drawable.ic_stat_notification);
                                 builder.setColor(ContextCompat.getColor(ClipboardService.this, R.color.colorPrimary));
                                 builder.extend(wearableExtender);
 

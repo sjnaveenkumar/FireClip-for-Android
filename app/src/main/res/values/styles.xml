@@ -35,8 +35,10 @@
         <item name="colorAccent">@color/colorAccent</item>
     </style>
 
-    <style name="Theme.Splash" parent="Theme.AppCompat.NoActionBar">
-        <item name="android:windowBackground">@drawable/splash_screen</item>
+    <style name="Theme.Splash" parent="Theme.AppCompat.Light">
+        <!--<item name="android:windowBackground">@drawable/splash_screen</item>-->
+        <item name="colorPrimary">@color/colorPrimary</item>
+        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
     </style>
 
     <style name="Theme.Spinner" parent="Base.Widget.AppCompat.DropDownItem.Spinner">
