@@ -19,7 +19,6 @@ FireClip uses Firebase's...
 * Firebase Auth - Providing Google Signin and Email signin for Authentication.
 * Firebase storage - Sharing a file (limited size) across all of your devices.
 * Firebase messaging - For push notification
-* Firebase Invites - Allowing users to invite other users to try the app.
 
 Realm object database is a simple alternative to SQLite and Core Data.
 
