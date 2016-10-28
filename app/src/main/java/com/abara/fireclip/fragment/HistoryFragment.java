@@ -3,6 +3,7 @@ package com.abara.fireclip.fragment;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
@@ -13,10 +14,10 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.LinearLayout;
 
 import com.abara.fireclip.HistoryActivity;
 import com.abara.fireclip.R;
@@ -85,67 +86,9 @@ public class HistoryFragment extends Fragment {
         favRef = FirebaseDatabase.getInstance().getReference("users").child(firebaseUser.getUid()).child("fav");
 
         historyClipRealmResults = realm.where(HistoryClip.class).findAllSorted("timestamp", Sort.DESCENDING);
-        historyAdapter = new RecentHistoryAdapter(getActivity(), historyClipRealmResults, new ItemClickListener() {
-            @Override
-            public void onItemClick(int position) {
-                startActivity(new Intent(getActivity(), HistoryActivity.class));
-            }
+        new RecentHistoryTask().execute();
 
-            @Override
-            public void onLongClick(final int position) {
-                AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-                builder.setTitle(R.string.title_delete_dialog);
-                builder.setPositiveButton("Delete", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        realm.beginTransaction();
-                        historyClipRealmResults.deleteFromRealm(position);
-                        realm.commitTransaction();
-                        historyAdapter.notifyDataSetChanged();
-                    }
-                });
-                builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        dialog.dismiss();
-                    }
-                });
-                builder.create().show();
-            }
-
-            /*
-            * Called when ADD TO FAVOURITES is clicked.
-            * */
-            @Override
-            public void onFavouriteClick(String content, String from, long timestamp) {
-                Snackbar.make(getActivity().findViewById(R.id.history_recent_rootview), "Adding to favourites...", Snackbar.LENGTH_SHORT).show();
-                DatabaseReference newFavRef = favRef.push();
-                String key = newFavRef.getKey();
-                String deviceName = prefs.getString(Utils.DEVICE_NAME_KEY, DeviceName.getDeviceName());
-                Map<String, Object> favMap = Utils.generateFavMapClip(content, deviceName, timestamp, key);
-
-                newFavRef.setValue(favMap).addOnCompleteListener(new OnCompleteListener<Void>() {
-                    @Override
-                    public void onComplete(@NonNull Task<Void> task) {
-                        Snackbar.make(getActivity().findViewById(R.id.history_recent_rootview), "Added to favourites", Snackbar.LENGTH_SHORT).show();
-                    }
-                }).addOnFailureListener(new OnFailureListener() {
-                    @Override
-                    public void onFailure(@NonNull Exception e) {
-                        Snackbar.make(getActivity().findViewById(R.id.history_recent_rootview), "Couldn't add to favourites", Snackbar.LENGTH_SHORT).show();
-                        e.printStackTrace();
-                    }
-                });
-            }
-
-
-        });
-
-        //initOrUpdateAdapter();
-
-        /*
-        * Reload the list if an item is deleted or added to history.
-        * */
+        // Reload the list if an item is deleted or added to history.
         changeListener = new RealmChangeListener() {
             @Override
             public void onChange(Object element) {
@@ -160,7 +103,8 @@ public class HistoryFragment extends Fragment {
     * Initialize and reload the list items.
     * */
     private void initOrUpdateAdapter() {
-        RealmResults<HistoryClip> historyClipRealmResults = realm.where(HistoryClip.class).findAllSorted("timestamp", Sort.DESCENDING);
+
+        historyClipRealmResults = realm.where(HistoryClip.class).findAllSorted("timestamp", Sort.DESCENDING);
         if (historyClipRealmResults.size() != 0) {
             historyEmptyView.setVisibility(View.GONE);
             historyList.setAdapter(historyAdapter);
@@ -168,6 +112,7 @@ public class HistoryFragment extends Fragment {
             historyEmptyView.setVisibility(View.VISIBLE);
             historyList.setAdapter(null);
         }
+
     }
 
     /*
@@ -178,4 +123,94 @@ public class HistoryFragment extends Fragment {
         super.onResume();
         initOrUpdateAdapter();
     }
+
+    /*
+    * Remove the listener callback
+    * */
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        if (realm != null && !realm.isClosed())
+            realm.removeChangeListener(changeListener);
+    }
+
+    private class RecentHistoryTask extends AsyncTask<Void, Void, Void> {
+
+        private LinearLayout loadingLayout;
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            loadingLayout = (LinearLayout) getView().findViewById(R.id.history_contents_loading);
+            loadingLayout.setVisibility(View.VISIBLE);
+        }
+
+        @Override
+        protected Void doInBackground(Void... voids) {
+            historyAdapter = new RecentHistoryAdapter(getActivity(), historyClipRealmResults, new ItemClickListener() {
+                @Override
+                public void onItemClick(int position) {
+                    startActivity(new Intent(getActivity(), HistoryActivity.class));
+                }
+
+                @Override
+                public void onLongClick(final int position) {
+                    AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+                    builder.setTitle(R.string.title_delete_dialog);
+                    builder.setPositiveButton("Delete", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            realm.beginTransaction();
+                            historyClipRealmResults.deleteFromRealm(position);
+                            realm.commitTransaction();
+                            historyAdapter.notifyDataSetChanged();
+                        }
+                    });
+                    builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            dialog.dismiss();
+                        }
+                    });
+                    builder.create().show();
+                }
+
+                /*
+                * Called when ADD TO FAVOURITES is clicked.
+                * */
+                @Override
+                public void onFavouriteClick(String content, String from, long timestamp) {
+                    Snackbar.make(getActivity().findViewById(R.id.history_recent_rootview), "Adding to favourites...", Snackbar.LENGTH_SHORT).show();
+                    DatabaseReference newFavRef = favRef.push();
+                    String key = newFavRef.getKey();
+                    String deviceName = prefs.getString(Utils.DEVICE_NAME_KEY, DeviceName.getDeviceName());
+                    Map<String, Object> favMap = Utils.generateFavMapClip(content, deviceName, timestamp, key);
+
+                    newFavRef.setValue(favMap).addOnCompleteListener(new OnCompleteListener<Void>() {
+                        @Override
+                        public void onComplete(@NonNull Task<Void> task) {
+                            Snackbar.make(getActivity().findViewById(R.id.history_recent_rootview), "Added to favourites", Snackbar.LENGTH_SHORT).show();
+                        }
+                    }).addOnFailureListener(new OnFailureListener() {
+                        @Override
+                        public void onFailure(@NonNull Exception e) {
+                            Snackbar.make(getActivity().findViewById(R.id.history_recent_rootview), "Couldn't add to favourites", Snackbar.LENGTH_SHORT).show();
+                            e.printStackTrace();
+                        }
+                    });
+                }
+
+
+            });
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void aVoid) {
+            super.onPostExecute(aVoid);
+            loadingLayout.setVisibility(View.GONE);
+            initOrUpdateAdapter();
+        }
+    }
+
 }

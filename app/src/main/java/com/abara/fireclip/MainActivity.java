@@ -7,9 +7,9 @@ import android.content.res.Configuration;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
+import android.support.design.widget.BottomNavigationView;
 import android.support.design.widget.NavigationView;
-import android.support.design.widget.TabLayout;
-import android.support.v4.view.ViewPager;
+import android.support.v4.app.Fragment;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AlertDialog;
@@ -21,7 +21,9 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toast;
 
-import com.abara.fireclip.adapter.MainViewPagerAdapter;
+import com.abara.fireclip.fragment.FavouritesFragment;
+import com.abara.fireclip.fragment.HistoryFragment;
+import com.abara.fireclip.fragment.HomeFragment;
 import com.abara.fireclip.service.ClipboardService;
 import com.abara.fireclip.util.HistoryClip;
 import com.google.firebase.auth.FirebaseAuth;
@@ -32,13 +34,15 @@ import io.realm.Realm;
 /*
 * MainActivity having favourites, home and history.
 * */
-public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
+public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener, BottomNavigationView.OnNavigationItemSelectedListener {
 
     private ActionBarDrawerToggle drawerToggle;
     private DrawerLayout drawerLayout;
     private NavigationView navigationView;
+    private BottomNavigationView bottomNavigation;
 
     private SharedPreferences preferences;
+    private Fragment currentFragment;
 
     private AppCompatTextView drawerDisplayName, drawerEmail;
     private FirebaseUser clipUser;
@@ -55,7 +59,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         preferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
         clipUser = FirebaseAuth.getInstance().getCurrentUser();
 
-        setupViewPager();
+        setupBottomNavigation();
         initNavigationDrawer();
 
         drawerDisplayName = (AppCompatTextView) navigationView.getHeaderView(0).findViewById(R.id.drawer_main_user_displayname);
@@ -171,21 +175,18 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     }
 
     /*
-    * Setup view pager and add icons.
+    * Setup the bottom navigation.
     * */
-    private void setupViewPager() {
+    private void setupBottomNavigation() {
 
-        ViewPager viewPager = (ViewPager) findViewById(R.id.main_content);
-        TabLayout tabLayout = (TabLayout) findViewById(R.id.main_tabs);
+        bottomNavigation = (BottomNavigationView) findViewById(R.id.main_bottom_nav);
+        MenuItem homeMenuItem = bottomNavigation.getMenu().getItem(1);
+        homeMenuItem.setChecked(true);
+        bottomNavigation.getMenu().getItem(0).setChecked(false);
+        bottomNavigation.getMenu().getItem(2).setChecked(false);
 
-        MainViewPagerAdapter adapter = new MainViewPagerAdapter(getSupportFragmentManager());
-        viewPager.setAdapter(adapter);
-
-        tabLayout.setupWithViewPager(viewPager);
-        tabLayout.getTabAt(0).setIcon(R.drawable.ic_content_fav);
-        tabLayout.getTabAt(1).setIcon(R.drawable.ic_content_home);
-        tabLayout.getTabAt(2).setIcon(R.drawable.ic_content_history);
-        tabLayout.getTabAt(1).select();
+        bottomNavigation.setOnNavigationItemSelectedListener(this);
+        onNavigationItemSelected(homeMenuItem);
 
     }
 
@@ -215,6 +216,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         switch (item.getItemId()) {
             case R.id.ic_nav_action_settings:
                 startActivity(new Intent(this, SettingsActivity.class));
+                drawerLayout.closeDrawer(navigationView);
                 break;
             case R.id.ic_nav_action_tell:
                 Intent inviteIntent = new Intent();
@@ -222,10 +224,38 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 inviteIntent.putExtra(Intent.EXTRA_TEXT, getResources().getString(R.string.tell_friend_message));
                 inviteIntent.setType("text/plain");
                 startActivity(Intent.createChooser(inviteIntent, getResources().getString(R.string.tell_friend_title_chooser)));
+                drawerLayout.closeDrawer(navigationView);
+                Toast.makeText(this, "Sharing with...", Toast.LENGTH_SHORT).show();
+                break;
+            // Bottom navigation items
+            case R.id.action_bottom_nav_fav:
+                if (!(currentFragment instanceof FavouritesFragment)) {
+                    currentFragment = new FavouritesFragment();
+                    showFragment();
+                }
+                break;
+            case R.id.action_bottom_nav_home:
+                if (!(currentFragment instanceof HomeFragment)) {
+                    currentFragment = new HomeFragment();
+                    showFragment();
+                }
+                break;
+            case R.id.action_bottom_nav_history:
+                if (!(currentFragment instanceof HistoryFragment)) {
+                    currentFragment = new HistoryFragment();
+                    showFragment();
+                }
                 break;
         }
-        drawerLayout.closeDrawer(navigationView);
         return true;
+    }
+
+    private void showFragment() {
+        getSupportFragmentManager()
+                .beginTransaction()
+                .setCustomAnimations(R.anim.slide_in_bottom, R.anim.disappear)
+                .replace(R.id.main_content, currentFragment)
+                .commit();
     }
 
 }

@@ -78,6 +78,7 @@ public class FavouritesFragment extends Fragment implements FavItemClickListener
         favoritesList.setLayoutManager(linearLayoutManager);
 
         favRef = FirebaseDatabase.getInstance().getReference("users").child(clipUser.getUid()).child("fav");
+        favRef.keepSynced(true);
 
         observer = new RecyclerView.AdapterDataObserver() {
             @Override

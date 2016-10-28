@@ -16,7 +16,7 @@
     <string name="close_navigation_drawer">Close Navigation Drawer</string>
     <string name="dialog_forgot_pass_text">We\'ll send you a password reset Email</string>
     <string name="create_account_title">Create your account</string>
-    <string name="history_header">Recent</string>
+    <string name="history_header">Recents</string>
     <string name="history_footer">View more</string>
     <string name="signout_text">Signout</string>
     <string name="history_text">History</string>
@@ -61,5 +61,7 @@
     <string name="tell_friend_title">Tell a Friend</string>
     <string name="tell_friend_message">Hey checkout FireClip. It\'s an Universal clipboard app which will increase your productivity!\nhttps://goo.gl/zZEPGh</string>
     <string name="tell_friend_title_chooser">Send to</string>
+    <string name="home_text">Home</string>
+    <string name="home_history_loading">Loading history…</string>
 
 </resources>

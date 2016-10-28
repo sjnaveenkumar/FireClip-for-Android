@@ -2,6 +2,8 @@ package com.abara.fireclip;
 
 import android.app.Application;
 
+import com.google.firebase.database.FirebaseDatabase;
+
 import io.realm.DynamicRealm;
 import io.realm.Realm;
 import io.realm.RealmConfiguration;
@@ -30,5 +32,6 @@ public class FireClipApp extends Application {
                 })
                 .build();
         Realm.setDefaultConfiguration(configuration);
+        FirebaseDatabase.getInstance().setPersistenceEnabled(true);
     }
 }

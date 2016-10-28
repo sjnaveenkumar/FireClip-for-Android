@@ -7,7 +7,6 @@ import android.content.ClipDescription;
 import android.content.ClipboardManager;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.graphics.BitmapFactory;
 import android.media.RingtoneManager;
 import android.os.IBinder;
 import android.preference.PreferenceManager;
@@ -58,7 +57,6 @@ public class ClipboardService extends Service {
     private String clipboardText = "", deviceName;
 
     private NotificationManagerCompat manager;
-    private NotificationCompat.WearableExtender wearableExtender;
 
     @Override
     public void onCreate() {
@@ -72,10 +70,6 @@ public class ClipboardService extends Service {
         manager = NotificationManagerCompat.from(this);
 
         clipData = clipboardManager.getPrimaryClip();
-
-        // Notification support for wearables
-        wearableExtender = new NotificationCompat.WearableExtender()
-                .setBackground(BitmapFactory.decodeResource(getResources(), R.drawable.ic_notification_large));
 
         if (firebaseUser != null) {
 
@@ -157,15 +151,14 @@ public class ClipboardService extends Service {
                                 NotificationCompat.Builder builder = new NotificationCompat.Builder(ClipboardService.this);
                                 builder.setContentTitle(from);
                                 builder.setContentText("You received a new clip.");
-                                boolean silentNotif = preferences.getBoolean(Utils.SILENT_NOTIF_KEY,false);
-                                if(!silentNotif){
+                                boolean silentNotif = preferences.getBoolean(Utils.SILENT_NOTIF_KEY, false);
+                                if (!silentNotif) {
                                     builder.setSound(RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION));
                                     builder.setDefaults(NotificationCompat.DEFAULT_VIBRATE);
                                 }
                                 builder.setPriority(NotificationCompat.PRIORITY_HIGH);
                                 builder.setSmallIcon(R.drawable.ic_stat_notification);
                                 builder.setColor(ContextCompat.getColor(ClipboardService.this, R.color.colorPrimary));
-                                builder.extend(wearableExtender);
 
                                 builder.setStyle(new android.support.v4.app.NotificationCompat.BigTextStyle().bigText(text));
 
