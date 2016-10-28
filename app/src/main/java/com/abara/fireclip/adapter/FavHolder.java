@@ -12,6 +12,9 @@ import com.abara.fireclip.R;
  * Created by abara on 09/10/16.
  */
 
+/*
+* View holder for Favourites items.
+* */
 
 public class FavHolder extends RecyclerView.ViewHolder {
 

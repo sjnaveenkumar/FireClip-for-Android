@@ -44,6 +44,9 @@ import io.realm.Sort;
  * Created by abara on 08/09/16.
  */
 
+/*
+* Fragment containing History items.
+* */
 public class HistoryFragment extends Fragment {
 
     private static final String TAG = HistoryFragment.class.getSimpleName();
@@ -110,9 +113,11 @@ public class HistoryFragment extends Fragment {
                 builder.create().show();
             }
 
+            /*
+            * Called when ADD TO FAVOURITES is clicked.
+            * */
             @Override
             public void onFavouriteClick(String content, String from, long timestamp) {
-                // add to favourites
                 Snackbar.make(getActivity().findViewById(R.id.history_recent_rootview), "Adding to favourites...", Snackbar.LENGTH_SHORT).show();
                 DatabaseReference newFavRef = favRef.push();
                 String key = newFavRef.getKey();
@@ -136,8 +141,11 @@ public class HistoryFragment extends Fragment {
 
         });
 
-        initOrUpdateAdapter();
+        //initOrUpdateAdapter();
 
+        /*
+        * Reload the list if an item is deleted or added to history.
+        * */
         changeListener = new RealmChangeListener() {
             @Override
             public void onChange(Object element) {
@@ -148,6 +156,9 @@ public class HistoryFragment extends Fragment {
         realm.addChangeListener(changeListener);
     }
 
+    /*
+    * Initialize and reload the list items.
+    * */
     private void initOrUpdateAdapter() {
         RealmResults<HistoryClip> historyClipRealmResults = realm.where(HistoryClip.class).findAllSorted("timestamp", Sort.DESCENDING);
         if (historyClipRealmResults.size() != 0) {
@@ -159,6 +170,9 @@ public class HistoryFragment extends Fragment {
         }
     }
 
+    /*
+    * Call initOrUpdateAdapter() here to keep the list always updated.
+    * */
     @Override
     public void onResume() {
         super.onResume();

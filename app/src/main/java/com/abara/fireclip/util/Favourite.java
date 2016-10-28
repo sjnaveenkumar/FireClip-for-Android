@@ -4,6 +4,9 @@ package com.abara.fireclip.util;
  * Created by abara on 08/10/16.
  */
 
+/*
+* A plain Favourite JAVA class
+* */
 public class Favourite {
 
     private String content, from, key_fav;

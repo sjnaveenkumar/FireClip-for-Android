@@ -17,6 +17,9 @@ import com.jaredrummler.android.device.DeviceName;
  * Created by abara on 25/09/16.
  */
 
+/*
+* Activity to get custom device name.
+* */
 public class DeviceNameActivity extends AppCompatActivity implements View.OnClickListener {
 
     private TextInputEditText deviceNameBox;
@@ -40,6 +43,9 @@ public class DeviceNameActivity extends AppCompatActivity implements View.OnClic
 
     }
 
+    /*
+    * If user doesn't enter custom device name, default name is taken.
+    * */
     @Override
     public void onClick(View view) {
 

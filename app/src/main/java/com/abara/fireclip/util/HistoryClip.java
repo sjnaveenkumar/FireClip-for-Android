@@ -7,6 +7,9 @@ import io.realm.annotations.Index;
  * Created by abara on 08/09/16.
  */
 
+/*
+* A plain HistoryClip JAVA class
+* */
 public class HistoryClip extends RealmObject {
 
     private String content;

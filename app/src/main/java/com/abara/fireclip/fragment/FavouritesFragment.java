@@ -38,6 +38,9 @@ import com.google.firebase.database.ValueEventListener;
  * Created by abara on 09/10/16.
  */
 
+/*
+* Fragment containing Favourite items.
+* */
 public class FavouritesFragment extends Fragment implements FavItemClickListener {
 
     private static final String TAG = FavouritesFragment.class.getSimpleName();
@@ -101,6 +104,11 @@ public class FavouritesFragment extends Fragment implements FavItemClickListener
         favoritesList.setAdapter(adapter);
         adapter.registerAdapterDataObserver(observer);
 
+        /*
+        * Hide the progressbar here.
+        * Firebase calls Value event after Child events.
+        * Child events are used by FirebaseUI RecyclerView internally.
+        * */
         favRef.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
@@ -118,6 +126,9 @@ public class FavouritesFragment extends Fragment implements FavItemClickListener
 
     }
 
+    /*
+    * Recommended to cleanup the adapter for Firebase UI Recyclerview.
+    * */
     @Override
     public void onDestroy() {
         super.onDestroy();
@@ -125,6 +136,9 @@ public class FavouritesFragment extends Fragment implements FavItemClickListener
             adapter.cleanup();
     }
 
+    /*
+    * Called when remove icon is clicked.
+    * */
     @Override
     public void onRemoveClick(final String key) {
         AlertDialog.Builder confirmDialog = new AlertDialog.Builder(getActivity());
@@ -158,7 +172,6 @@ public class FavouritesFragment extends Fragment implements FavItemClickListener
 
     @Override
     public void onItemClick(Favourite favourite) {
-
-
+        // Nothing to do!
     }
 }

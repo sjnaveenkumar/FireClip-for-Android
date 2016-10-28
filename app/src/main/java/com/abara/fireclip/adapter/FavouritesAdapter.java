@@ -11,6 +11,10 @@ import com.google.firebase.database.DatabaseReference;
  * Created by abara on 09/10/16.
  */
 
+/*
+* RecyclerView adapter to populate Favourites items.
+* */
+
 public class FavouritesAdapter extends FirebaseRecyclerAdapter<Favourite, FavHolder> {
 
     private FavItemClickListener listener;

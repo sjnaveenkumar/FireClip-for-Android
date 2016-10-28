@@ -40,6 +40,9 @@ import java.util.Map;
  * Created by abara on 08/09/16.
  */
 
+/*
+* Fragment containing Basic home items.
+* */
 public class HomeFragment extends Fragment implements View.OnClickListener, CompoundButton.OnCheckedChangeListener {
 
     private static final String TAG = HomeFragment.class.getSimpleName();
@@ -69,18 +72,17 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Comp
 
         View view = getView();
 
-        // Initialize manual update card's components
+        // Initialize manual update card's components.
         manualUpdateContentBox = (TextInputEditText) view.findViewById(R.id.manual_update_card_content_box);
         updateButton = (AppCompatButton) view.findViewById(R.id.manual_update_card_button);
 
-        //Initialize quick settings switch
+        //Initialize quick settings switch.
         enableServiceSwitch = (SwitchCompat) view.findViewById(R.id.quick_settings_card_1_switch);
         autoAcceptSwitch = (SwitchCompat) view.findViewById(R.id.quick_settings_card_2_switch);
 
         boolean shouldShowInitialCard = preferences.getBoolean(Utils.INITIAL_CARD_KEY, true);
-
         if (shouldShowInitialCard) {
-            // Initialize initial card's components
+            // Initialize initial card's components.
             initialCard = (CardView) view.findViewById(R.id.home_initial_card);
             gotItButton = (AppCompatButton) view.findViewById(R.id.initial_card_got_it_button);
             initialCardTitleText = (AppCompatTextView) view.findViewById(R.id.initial_card_title_text);
@@ -101,12 +103,15 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Comp
 
     }
 
+    /*
+    * Load the preference values.
+    * */
     @Override
     public void onStart() {
         super.onStart();
-
         boolean enableService = preferences.getBoolean(Utils.ENABLE_SERVICE_KEY, true);
         enableServiceSwitch.setChecked(enableService);
+
         boolean autoAcceptClip = preferences.getBoolean(Utils.AUTO_ACCEPT_KEY, false);
         autoAcceptSwitch.setChecked(autoAcceptClip);
     }
@@ -125,6 +130,9 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Comp
 
     }
 
+    /*
+    * Update the clip to Firebase database.
+    * */
     private void updateContentToFirebase() {
 
         userClipRef = FirebaseDatabase.getInstance().getReference("users").child(clipUser.getUid()).child("clip");
@@ -163,6 +171,9 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Comp
 
     }
 
+    /*
+    * Save settings and enable (or) disable service.
+    * */
     @Override
     public void onCheckedChanged(CompoundButton compoundButton, boolean checked) {
 

@@ -28,6 +28,9 @@ import com.google.firebase.auth.FirebaseUser;
  * Created by abara on 24/09/16.
  */
 
+/*
+* Activity to login to FireClip.
+* */
 public class LoginActivity extends AppCompatActivity implements View.OnClickListener {
 
     private FirebaseAuth firebaseAuth;
@@ -51,6 +54,9 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
         signInButton.setOnClickListener(this);
         forgotPassView.setOnClickListener(this);
 
+        /*
+        * Listen for auth changes, start device activity after FireClip SignIn.
+        * */
         authStateListener = new FirebaseAuth.AuthStateListener() {
             @Override
             public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
@@ -68,6 +74,9 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
 
     }
 
+    /*
+    * Signin or launch forget password dialog.
+    * */
     @Override
     public void onClick(View view) {
         switch (view.getId()) {
@@ -80,6 +89,9 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
         }
     }
 
+    /*
+    * Show forget password dialog.
+    * */
     private void launchForgotPasswordDialog() {
 
         final View view = LayoutInflater.from(this).inflate(R.layout.dialog_forgot_pass, null);
@@ -125,6 +137,9 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
 
     }
 
+    /*
+    * Signin using email and password.
+    * */
     private void signIn() {
 
         String email = emailBox.getText().toString();
@@ -157,12 +172,18 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
 
     }
 
+    /*
+    * Add auth state listener.
+    * */
     @Override
     protected void onStart() {
         super.onStart();
         firebaseAuth.addAuthStateListener(authStateListener);
     }
 
+    /*
+    * Remove auth state listener.
+    * */
     @Override
     protected void onStop() {
         super.onStop();

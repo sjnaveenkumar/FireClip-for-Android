@@ -11,6 +11,9 @@ import io.realm.RealmMigration;
  * Created by abara on 09/09/16.
  */
 
+/*
+* FireClip application class.
+* */
 public class FireClipApp extends Application {
 
     @Override

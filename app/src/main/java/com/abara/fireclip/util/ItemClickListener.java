@@ -4,6 +4,9 @@ package com.abara.fireclip.util;
  * Created by abara on 11/09/16.
  */
 
+/*
+* Callback listeners for History item.
+* */
 public interface ItemClickListener {
 
     void onItemClick(int position);

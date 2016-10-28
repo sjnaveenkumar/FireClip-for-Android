@@ -32,6 +32,9 @@ import com.google.firebase.auth.GoogleAuthProvider;
  * Created by abara on 29/07/16.
  */
 
+/*
+* Activity shown first, and when logged out.
+* */
 public class IntroActivity extends AppCompatActivity implements View.OnClickListener, GoogleApiClient.OnConnectionFailedListener {
 
     private static final int RC_SIGN_IN = 9001;
@@ -66,6 +69,9 @@ public class IntroActivity extends AppCompatActivity implements View.OnClickList
         googleSignInButton.setOnClickListener(this);
         emailSignInButton.setOnClickListener(this);
 
+        /*
+        * Listen for auth changes, start device activity after Google SignIn.
+        * */
         authStateListener = new FirebaseAuth.AuthStateListener() {
             @Override
             public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
@@ -108,11 +114,17 @@ public class IntroActivity extends AppCompatActivity implements View.OnClickList
 
     }
 
+    /*
+    * Method to signin with Google.
+    * */
     private void signInWithGoogle() {
         Intent signinIntent = Auth.GoogleSignInApi.getSignInIntent(googleApiClient);
         startActivityForResult(signinIntent, RC_SIGN_IN);
     }
 
+    /*
+    * Receive result of Google Signin
+    * */
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -132,6 +144,9 @@ public class IntroActivity extends AppCompatActivity implements View.OnClickList
 
     }
 
+    /*
+    * Signin to FireClip with Google account.
+    * */
     private void firebaseAuthWithGoogle(GoogleSignInAccount account) {
 
         AuthCredential credential = GoogleAuthProvider.getCredential(account.getIdToken(), null);
@@ -158,6 +173,9 @@ public class IntroActivity extends AppCompatActivity implements View.OnClickList
 
     }
 
+    /*
+    * Remove auth listener.
+    * */
     @Override
     protected void onStop() {
         super.onStop();

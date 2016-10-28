@@ -33,8 +33,8 @@ import io.realm.RealmResults;
 
 public class SettingsActivity extends AppCompatActivity implements View.OnClickListener, CompoundButton.OnCheckedChangeListener {
 
-    private LinearLayout enableLayout, autoAcceptLayout, remManualLayout, deviceNameLayout;
-    private SwitchCompat enableSwitch, autoAcceptSwitch, remManualSwitch;
+    private LinearLayout enableLayout, autoAcceptLayout, remManualLayout, deviceNameLayout, silentNotifLayout;
+    private SwitchCompat enableSwitch, autoAcceptSwitch, remManualSwitch, silentNotifSwitch;
     private AppCompatTextView deviceNameText;
 
     private SharedPreferences prefs;
@@ -56,10 +56,12 @@ public class SettingsActivity extends AppCompatActivity implements View.OnClickL
         autoAcceptLayout = (LinearLayout) findViewById(R.id.settings_auto_accept_layout);
         remManualLayout = (LinearLayout) findViewById(R.id.settings_remember_his_layout);
         deviceNameLayout = (LinearLayout) findViewById(R.id.settings_device_name_layout);
+        silentNotifLayout = (LinearLayout) findViewById(R.id.settings_silent_notif_layout);
 
         enableSwitch = (SwitchCompat) findViewById(R.id.settings_enable_switch);
         autoAcceptSwitch = (SwitchCompat) findViewById(R.id.settings_auto_accept_switch);
         remManualSwitch = (SwitchCompat) findViewById(R.id.settings_remember_his_switch);
+        silentNotifSwitch = (SwitchCompat) findViewById(R.id.settings_silent_notif_switch);
 
         deviceNameText = (AppCompatTextView) findViewById(R.id.settings_device_name_title);
 
@@ -67,21 +69,29 @@ public class SettingsActivity extends AppCompatActivity implements View.OnClickL
         autoAcceptLayout.setOnClickListener(this);
         remManualLayout.setOnClickListener(this);
         deviceNameLayout.setOnClickListener(this);
+        silentNotifLayout.setOnClickListener(this);
 
         boolean enableService = prefs.getBoolean(Utils.ENABLE_SERVICE_KEY, true);
         enableSwitch.setChecked(enableService);
+
         boolean autoAccept = prefs.getBoolean(Utils.AUTO_ACCEPT_KEY, false);
         autoAcceptSwitch.setChecked(autoAccept);
         autoAcceptSwitch.setEnabled(enableService);
         autoAcceptLayout.setClickable(enableService);
+
+        boolean silentNotif = prefs.getBoolean(Utils.SILENT_NOTIF_KEY, false);
+        silentNotifSwitch.setChecked(silentNotif);
+
         boolean remManualHis = prefs.getBoolean(Utils.REM_MANUAL_HIS_KEY, false);
         remManualSwitch.setChecked(remManualHis);
+
         String deviceName = prefs.getString(Utils.DEVICE_NAME_KEY, DeviceName.getDeviceName());
         deviceNameText.setText(deviceName);
 
         enableSwitch.setOnCheckedChangeListener(this);
         autoAcceptSwitch.setOnCheckedChangeListener(this);
         remManualSwitch.setOnCheckedChangeListener(this);
+        silentNotifSwitch.setOnCheckedChangeListener(this);
 
     }
 
@@ -110,6 +120,9 @@ public class SettingsActivity extends AppCompatActivity implements View.OnClickL
                 break;
             case R.id.settings_device_name_layout:
                 showDeviceNameDialog();
+                break;
+            case R.id.settings_silent_notif_layout:
+                toogleSwitch(silentNotifSwitch);
                 break;
         }
 
@@ -143,6 +156,9 @@ public class SettingsActivity extends AppCompatActivity implements View.OnClickL
                 break;
             case R.id.settings_remember_his_switch:
                 key = Utils.REM_MANUAL_HIS_KEY;
+                break;
+            case R.id.settings_silent_notif_switch:
+                key = Utils.SILENT_NOTIF_KEY;
                 break;
         }
 

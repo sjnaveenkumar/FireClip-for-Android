@@ -12,6 +12,10 @@ import com.abara.fireclip.fragment.HomeFragment;
  * Created by abara on 07/09/16.
  */
 
+/*
+* Fragment Adapter to populate Fragments for Tabs.
+* */
+
 public class MainViewPagerAdapter extends FragmentPagerAdapter {
 
     private Fragment fragments[] = {new FavouritesFragment(), new HomeFragment(), new HistoryFragment()};

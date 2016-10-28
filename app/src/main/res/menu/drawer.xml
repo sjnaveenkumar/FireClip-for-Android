@@ -7,9 +7,9 @@
             android:icon="@drawable/ic_action_settings"
             android:title="@string/settings_text" />
         <item
-            android:id="@+id/ic_nav_action_invite"
+            android:id="@+id/ic_nav_action_tell"
             android:icon="@drawable/ic_action_invite"
-            android:title="@string/invitation_title" />
+            android:title="@string/tell_friend_title" />
     </group>
 
 </menu>

@@ -5,6 +5,8 @@ import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.preference.PreferenceManager;
 import android.support.v4.app.NotificationManagerCompat;
 
 import com.abara.fireclip.service.ClipboardService;
@@ -17,6 +19,9 @@ import java.util.Date;
  * Created by abara on 25/09/16.
  */
 
+/*
+* BroadcastReceiver to accept the clips from notification.
+* */
 public class AcceptActionReceiver extends BroadcastReceiver {
 
     public static final String TEXT_EXTRA = "clip_text";
@@ -38,6 +43,7 @@ public class AcceptActionReceiver extends BroadcastReceiver {
         ClipData data = ClipData.newPlainText("FireClipText", text);
         clipboardManager.setPrimaryClip(data);
 
+        // Update the clip to local database as well.
         Utils.updateRealmDB(text, from, timestamp);
 
         if (intent.getBooleanExtra(CLEAR_NOTIF_EXTRA, false)) {

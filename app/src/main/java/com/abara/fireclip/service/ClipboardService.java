@@ -3,6 +3,7 @@ package com.abara.fireclip.service;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.content.ClipData;
+import android.content.ClipDescription;
 import android.content.ClipboardManager;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -38,6 +39,9 @@ import static android.content.ClipDescription.MIMETYPE_TEXT_PLAIN;
  * Created by abara on 30/07/16.
  */
 
+/*
+* Service to receive clips from other devices.
+* */
 public class ClipboardService extends Service {
 
     public static final int NEW_CLIP_NOTIFICATION_ID = 9976;
@@ -68,6 +72,8 @@ public class ClipboardService extends Service {
         manager = NotificationManagerCompat.from(this);
 
         clipData = clipboardManager.getPrimaryClip();
+
+        // Notification support for wearables
         wearableExtender = new NotificationCompat.WearableExtender()
                 .setBackground(BitmapFactory.decodeResource(getResources(), R.drawable.ic_notification_large));
 
@@ -75,6 +81,7 @@ public class ClipboardService extends Service {
 
             userClipRef = FirebaseDatabase.getInstance().getReference("users").child(firebaseUser.getUid()).child("clip");
 
+            // Listen for local clipboard changes.
             clipChangedListener = new ClipboardManager.OnPrimaryClipChangedListener() {
                 @Override
                 public void onPrimaryClipChanged() {
@@ -83,12 +90,16 @@ public class ClipboardService extends Service {
 
                     if (clipboardManager.hasPrimaryClip()) {
 
-                        if (clipboardManager.getPrimaryClipDescription().hasMimeType(MIMETYPE_TEXT_PLAIN)) {
+                        // Check if the clipboard has plain text.
+                        // It's not possible to have binary items (like images etc) in clipboard on Android.
+                        ClipDescription clipDescription = clipboardManager.getPrimaryClipDescription();
+                        if (clipDescription.hasMimeType(MIMETYPE_TEXT_PLAIN)) {
 
                             clipData = clipboardManager.getPrimaryClip();
                             clipItem = clipData.getItemAt(0);
                             CharSequence clipText = clipItem.getText();
 
+                            // Check if there are some text in clipboard.
                             if (clipText != null) {
 
                                 // Update only if the clip received is not in the clipboard already.
@@ -98,6 +109,7 @@ public class ClipboardService extends Service {
                                     userClipRef.setValue(dataMap);
                                     clipboardText = clipText.toString();
 
+                                    // Update local history as well.
                                     Utils.updateRealmDB(clipboardText, deviceName, new Date().getTime());
 
                                     Log.d(TAG, "onPrimaryClipChanged: Saved data is text : " + clipItem.toString());
@@ -110,7 +122,6 @@ public class ClipboardService extends Service {
                                 Log.d(TAG, "onPrimaryClipChanged: There is no text in clipboard!");
                             }
 
-
                         } else {
                             Log.d(TAG, "onPrimaryClipChanged: Content is not a text!");
                         }
@@ -122,6 +133,9 @@ public class ClipboardService extends Service {
 
             clipboardManager.addPrimaryClipChangedListener(clipChangedListener);
 
+            /*
+            * Listen for new clips from Firebase database.
+            * */
             clipValueListener = new ValueEventListener() {
                 @Override
                 public void onDataChange(DataSnapshot dataSnapshot) {
@@ -143,9 +157,12 @@ public class ClipboardService extends Service {
                                 NotificationCompat.Builder builder = new NotificationCompat.Builder(ClipboardService.this);
                                 builder.setContentTitle(from);
                                 builder.setContentText("You received a new clip.");
-                                builder.setSound(RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION));
+                                boolean silentNotif = preferences.getBoolean(Utils.SILENT_NOTIF_KEY,false);
+                                if(!silentNotif){
+                                    builder.setSound(RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION));
+                                    builder.setDefaults(NotificationCompat.DEFAULT_VIBRATE);
+                                }
                                 builder.setPriority(NotificationCompat.PRIORITY_HIGH);
-                                builder.setDefaults(NotificationCompat.DEFAULT_VIBRATE);
                                 builder.setSmallIcon(R.drawable.ic_stat_notification);
                                 builder.setColor(ContextCompat.getColor(ClipboardService.this, R.color.colorPrimary));
                                 builder.extend(wearableExtender);
@@ -193,6 +210,9 @@ public class ClipboardService extends Service {
         }
     }
 
+    /*
+    * get and set the device name to the variable.
+    * */
     private void getDeviceName() {
         deviceName = preferences.getString(Utils.DEVICE_NAME_KEY, DeviceName.getDeviceName());
     }
@@ -203,6 +223,10 @@ public class ClipboardService extends Service {
         return null;
     }
 
+    /*
+    * Get the current text from the clipboard and
+    * store it onto clipboardText variable.
+    * */
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         if (clipboardManager.hasPrimaryClip()) {
@@ -215,6 +239,9 @@ public class ClipboardService extends Service {
         return START_STICKY;
     }
 
+    /*
+    * Cleanup when destroy.
+    * */
     @Override
     public void onDestroy() {
         clipboardManager.removePrimaryClipChangedListener(clipChangedListener);

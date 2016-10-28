@@ -24,6 +24,10 @@ import io.realm.RealmResults;
  * Created by abara on 11/09/16.
  */
 
+/*
+* RecyclerView adapter to populate History items.
+* */
+
 public class HistoryAdapter extends RecyclerView.Adapter<HistoryHolder> {
 
     private Context context;
@@ -69,16 +73,16 @@ public class HistoryAdapter extends RecyclerView.Adapter<HistoryHolder> {
         holder.itemLayout.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (holder.tagsLayout.getVisibility() == View.GONE) {
+                if (holder.addToFavLayout.getVisibility() == View.GONE) {
                     if (lastTagLayout != null)
                         lastTagLayout.setVisibility(View.GONE);
-                    lastTagLayout = holder.tagsLayout;
+                    lastTagLayout = holder.addToFavLayout;
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
                         TransitionManager.beginDelayedTransition(holder.card);
                     }
-                    holder.tagsLayout.setVisibility(View.VISIBLE);
+                    holder.addToFavLayout.setVisibility(View.VISIBLE);
                 } else {
-                    holder.tagsLayout.setVisibility(View.GONE);
+                    holder.addToFavLayout.setVisibility(View.GONE);
                 }
             }
         });

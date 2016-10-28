@@ -29,6 +29,9 @@ import com.google.firebase.auth.FirebaseUser;
 
 import io.realm.Realm;
 
+/*
+* MainActivity having favourites, home and history.
+* */
 public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
 
     private ActionBarDrawerToggle drawerToggle;
@@ -63,6 +66,9 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
     }
 
+    /*
+    * Setup navigation drawer.
+    * */
     private void initNavigationDrawer() {
 
         drawerLayout = (DrawerLayout) findViewById(R.id.main_drawer_layout);
@@ -109,6 +115,9 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         drawerToggle.onConfigurationChanged(newConfig);
     }
 
+    /*
+    * Set option item selections.
+    * */
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
@@ -138,6 +147,9 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         return drawerToggle.onOptionsItemSelected(item);
     }
 
+    /*
+    * Signout, delete local history.
+    * */
     private void signOut() {
         FirebaseAuth.getInstance().signOut();
 
@@ -158,6 +170,9 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         Toast.makeText(this, "You are signed out!", Toast.LENGTH_SHORT).show();
     }
 
+    /*
+    * Setup view pager and add icons.
+    * */
     private void setupViewPager() {
 
         ViewPager viewPager = (ViewPager) findViewById(R.id.main_content);
@@ -174,6 +189,9 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
     }
 
+    /*
+    * Close drawer and then navigate back.
+    * */
     @Override
     public void onBackPressed() {
         if (drawerLayout.isDrawerOpen(navigationView)) {
@@ -189,23 +207,21 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         return super.onCreateOptionsMenu(menu);
     }
 
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-    }
-
+    /*
+    * Set navigation item selections.
+    * */
     @Override
     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
         switch (item.getItemId()) {
             case R.id.ic_nav_action_settings:
                 startActivity(new Intent(this, SettingsActivity.class));
                 break;
-            case R.id.ic_nav_action_invite:
+            case R.id.ic_nav_action_tell:
                 Intent inviteIntent = new Intent();
                 inviteIntent.setAction(Intent.ACTION_SEND);
-                inviteIntent.putExtra(Intent.EXTRA_TEXT, getResources().getString(R.string.invitation_message));
+                inviteIntent.putExtra(Intent.EXTRA_TEXT, getResources().getString(R.string.tell_friend_message));
                 inviteIntent.setType("text/plain");
-                startActivity(Intent.createChooser(inviteIntent, getResources().getString(R.string.invitation_title_chooser)));
+                startActivity(Intent.createChooser(inviteIntent, getResources().getString(R.string.tell_friend_title_chooser)));
                 break;
         }
         drawerLayout.closeDrawer(navigationView);

@@ -45,6 +45,10 @@ import io.realm.Sort;
 /**
  * Created by abara on 11/09/16.
  */
+
+/*
+* Activity for managing local history clips.
+* */
 public class HistoryActivity extends AppCompatActivity implements ItemClickListener {
 
     private Realm realm;
@@ -85,6 +89,7 @@ public class HistoryActivity extends AppCompatActivity implements ItemClickListe
         adapter = new HistoryAdapter(this, historyClips, this);
         historyList.setAdapter(adapter);
 
+        // Listen for database changes, and update the adapter.
         changeListener = new RealmChangeListener() {
             @Override
             public void onChange(Object element) {
@@ -95,6 +100,7 @@ public class HistoryActivity extends AppCompatActivity implements ItemClickListe
 
         sortBySpinner = (AppCompatSpinner) findViewById(R.id.sort_by_spinner);
 
+        // Sort options includes Latest, Oldest and name of devices clips received from.
         sortOptions.add(0, "Latest");
         sortOptions.add(1, "Oldest");
         RealmResults<HistoryClip> deviceNames = historyClips.distinct("from").sort("from", Sort.ASCENDING);
@@ -146,6 +152,9 @@ public class HistoryActivity extends AppCompatActivity implements ItemClickListe
         return super.onCreateOptionsMenu(menu);
     }
 
+    /*
+    * Delete all history.
+    * */
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
@@ -182,6 +191,9 @@ public class HistoryActivity extends AppCompatActivity implements ItemClickListe
         return super.onOptionsItemSelected(item);
     }
 
+    /*
+    * Close realm object.
+    * */
     @Override
     protected void onDestroy() {
         if (realm != null)
@@ -195,6 +207,9 @@ public class HistoryActivity extends AppCompatActivity implements ItemClickListe
         // Automatically handled by adapter.
     }
 
+    /*
+    * Provide dialog option to delete clips.
+    * */
     @Override
     public void onLongClick(final int position) {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
@@ -217,10 +232,12 @@ public class HistoryActivity extends AppCompatActivity implements ItemClickListe
         builder.create().show();
     }
 
+    /*
+    * Add to favourites.
+    * */
     @Override
     public void onFavouriteClick(final String content, final String from, final long timestamp) {
 
-        // add to favourites
         Snackbar.make(findViewById(R.id.history_root_view), "Adding to favourites...", Snackbar.LENGTH_SHORT).show();
         DatabaseReference newFavRef = favRef.push();
         String key = newFavRef.getKey();

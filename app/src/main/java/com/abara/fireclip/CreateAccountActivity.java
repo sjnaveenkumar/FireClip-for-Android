@@ -24,6 +24,10 @@ import com.google.firebase.auth.UserProfileChangeRequest;
 /**
  * Created by abara on 01/08/16.
  */
+
+/*
+* Activity to Create an account for FireClip.
+* */
 public class CreateAccountActivity extends AppCompatActivity implements View.OnClickListener {
 
     private FirebaseAuth firebaseAuth;
@@ -48,6 +52,9 @@ public class CreateAccountActivity extends AppCompatActivity implements View.OnC
 
         createSignupBtn.setOnClickListener(this);
 
+        /*
+        * Listen for user authentication changes.
+        * */
         authStateListener = new FirebaseAuth.AuthStateListener() {
             @Override
             public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
@@ -56,6 +63,9 @@ public class CreateAccountActivity extends AppCompatActivity implements View.OnC
 
                 if (user != null) {
 
+                    /*
+                    * Update the user's name after account has been created.
+                    * */
                     UserProfileChangeRequest changeRequest = new UserProfileChangeRequest.Builder()
                             .setDisplayName(name).build();
                     user.updateProfile(changeRequest).addOnCompleteListener(CreateAccountActivity.this, new OnCompleteListener<Void>() {
@@ -80,12 +90,18 @@ public class CreateAccountActivity extends AppCompatActivity implements View.OnC
 
     }
 
+    /*
+    * Setup auth listener.
+    * */
     @Override
     protected void onStart() {
         super.onStart();
         firebaseAuth.addAuthStateListener(authStateListener);
     }
 
+    /*
+    * Validate and create account.
+    * */
     @Override
     public void onClick(View view) {
         name = nameBox.getText().toString();
@@ -129,6 +145,9 @@ public class CreateAccountActivity extends AppCompatActivity implements View.OnC
 
     }
 
+    /*
+    * Remove auth listener.
+    * */
     @Override
     protected void onStop() {
         super.onStop();

@@ -4,16 +4,12 @@ import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
 import android.os.Build;
-import android.support.v4.text.util.LinkifyCompat;
 import android.support.v7.widget.AppCompatImageView;
 import android.support.v7.widget.AppCompatTextView;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
-import android.text.Spannable;
-import android.text.style.ClickableSpan;
 import android.text.util.Linkify;
 import android.transition.TransitionManager;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -30,6 +26,11 @@ import io.realm.RealmResults;
 /**
  * Created by abara on 08/09/16.
  */
+
+/*
+* RecyclerView adapter to populate 5 items from History,
+* including a Header and a Footer.
+* */
 
 public class RecentHistoryAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
@@ -52,6 +53,9 @@ public class RecentHistoryAdapter extends RecyclerView.Adapter<RecyclerView.View
         this.itemClickListener = itemClickListener;
     }
 
+    /*
+    * Return the type of view holder for the view type.
+    * */
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
 
@@ -68,9 +72,16 @@ public class RecentHistoryAdapter extends RecyclerView.Adapter<RecyclerView.View
 
     }
 
+    /*
+    * Populate view corresponding to it's position.
+    * Position 0 : Header is always first.
+    * Position last-1 : Footer is always last.
+    * else : in between items.
+    * */
     @Override
     public void onBindViewHolder(final RecyclerView.ViewHolder holder, int position) {
 
+        // Populate history items between first and last.
         if (position != 0 && position != getItemCount() - 1) {
             final HistoryHolder historyHolder = (HistoryHolder) holder;
             final HistoryClip clip = historyClips.get(position - 1);
@@ -95,17 +106,18 @@ public class RecentHistoryAdapter extends RecyclerView.Adapter<RecyclerView.View
             historyHolder.itemLayout.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    if (historyHolder.tagsLayout.getVisibility() == View.GONE) {
+                    if (historyHolder.addToFavLayout.getVisibility() == View.GONE) {
                         if (lastTagLayout != null)
                             lastTagLayout.setVisibility(View.GONE);
-                        lastTagLayout = historyHolder.tagsLayout;
-                        // Animate item while showing
+                        lastTagLayout = historyHolder.addToFavLayout;
+                        // Expand card and show addToFavLayout.
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
                             TransitionManager.beginDelayedTransition(historyHolder.card);
                         }
-                        historyHolder.tagsLayout.setVisibility(View.VISIBLE);
+                        historyHolder.addToFavLayout.setVisibility(View.VISIBLE);
                     } else {
-                        historyHolder.tagsLayout.setVisibility(View.GONE);
+                        // TODO: A way to implement same animation while hiding addToFavLayout.
+                        historyHolder.addToFavLayout.setVisibility(View.GONE);
                     }
                 }
             });
@@ -118,6 +130,7 @@ public class RecentHistoryAdapter extends RecyclerView.Adapter<RecyclerView.View
             Linkify.addLinks(historyHolder.content, Linkify.ALL);
         }
 
+        // Populate footer as last item.
         if (position == getItemCount() - 1) {
             final FooterHolder footerHolder = (FooterHolder) holder;
             footerHolder.viewMoreLayout.setOnClickListener(new View.OnClickListener() {
@@ -130,6 +143,12 @@ public class RecentHistoryAdapter extends RecyclerView.Adapter<RecyclerView.View
 
     }
 
+    /*
+    * Return the view type.
+    * If position - 0 : return HEADER_ITEM
+    * else if position - last :  return FOOTER_ITEM
+    * else CLIP_ITEM
+    * */
     @Override
     public int getItemViewType(int position) {
         if (position == 0)
@@ -139,20 +158,28 @@ public class RecentHistoryAdapter extends RecyclerView.Adapter<RecyclerView.View
         return CLIP_ITEM;
     }
 
+    /*
+    * Calculate and return the item count.
+    * If no. of history items is 5, return 5 + HEADER_FOOTER_COUNT (2)
+    * else return size of history items + HEADER_FOOTER_COUNT (2)
+    * */
     @Override
     public int getItemCount() {
         int size = historyClips.size();
         if (size < MAX_ITEM_COUNT) {
-            return historyClips.size() + HEADER_FOOTER_COUNT;
+            return size + HEADER_FOOTER_COUNT;
         }
         return MAX_ITEM_COUNT + HEADER_FOOTER_COUNT;
     }
 }
 
+/*
+* View holder for History Item.
+* */
 class HistoryHolder extends RecyclerView.ViewHolder {
 
     AppCompatTextView from, content;
-    LinearLayout itemLayout, tagsLayout;
+    LinearLayout itemLayout, addToFavLayout;
     AppCompatImageView copyButton;
     AppCompatTextView favTag;
     CardView card;
@@ -164,7 +191,7 @@ class HistoryHolder extends RecyclerView.ViewHolder {
         content = (AppCompatTextView) view.findViewById(R.id.history_item_content);
         itemLayout = (LinearLayout) view.findViewById(R.id.history_item_layout);
         copyButton = (AppCompatImageView) view.findViewById(R.id.history_item_copy);
-        tagsLayout = (LinearLayout) view.findViewById(R.id.history_item_layout_tags);
+        addToFavLayout = (LinearLayout) view.findViewById(R.id.history_item_layout_add_fav);
 
         favTag = (AppCompatTextView) view.findViewById(R.id.history_add_to_fav);
 
@@ -172,20 +199,23 @@ class HistoryHolder extends RecyclerView.ViewHolder {
     }
 }
 
+/*
+* View holder for Header item.
+* */
 class HeaderHolder extends RecyclerView.ViewHolder {
     public HeaderHolder(View itemView) {
         super(itemView);
     }
 }
 
+/*
+* View holder for Footer item.
+* */
 class FooterHolder extends RecyclerView.ViewHolder {
 
     LinearLayout viewMoreLayout;
-
     public FooterHolder(View itemView) {
         super(itemView);
-
         viewMoreLayout = (LinearLayout) itemView.findViewById(R.id.footer_view_more);
-
     }
 }

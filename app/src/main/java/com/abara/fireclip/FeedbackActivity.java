@@ -35,6 +35,10 @@ import java.util.Map;
 /**
  * Created by abara on 11/10/16.
  */
+
+/*
+* Activity to send feedback.
+* */
 public class FeedbackActivity extends AppCompatActivity implements View.OnClickListener, View.OnLongClickListener {
 
     private static final String GITHUB_ANDROID_REPO = "https://github.com/lvabarajithan/FireClip-for-Android";
@@ -91,6 +95,9 @@ public class FeedbackActivity extends AppCompatActivity implements View.OnClickL
 
     }
 
+    /*
+    * Method to submit feedback to FireClip database.
+    * */
     private void submitFeedback(final String feedback) {
         Map<String, Object> feedMap = new HashMap<>();
         feedMap.put(Utils.DATA_MAP_TIME, ServerValue.TIMESTAMP);
@@ -127,6 +134,9 @@ public class FeedbackActivity extends AppCompatActivity implements View.OnClickL
         return super.onOptionsItemSelected(item);
     }
 
+    /*
+    * Add repository link to favourites, on long click.
+    * */
     @Override
     public boolean onLongClick(View v) {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());

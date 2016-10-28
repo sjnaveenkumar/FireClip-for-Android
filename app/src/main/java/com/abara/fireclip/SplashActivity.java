@@ -11,6 +11,9 @@ import com.google.firebase.auth.FirebaseAuth;
  * Created by abara on 29/07/16.
  */
 
+/*
+* Activity decides whether to show MainActivity or IntroActivity.
+* */
 public class SplashActivity extends AppCompatActivity {
 
     @Override
