@@ -49,7 +49,7 @@
     <string name="home_favorites_loading">Loading favorites…</string>
     <string name="action_favourites">ADD TO FAVORITES</string>
     <string name="action_retry">Retry</string>
-    <string name="feedback_text"><![CDATA[Help & Feedback]]></string>
+    <string name="feedback_text">Send Feedback</string>
     <string name="feedback_hint">Your thoughts, bugs and suggestions…</string>
     <string name="feedback_send_text">Send feedback</string>
     <string name="feedback_desc_text">Your feedback and suggestions will help us to improve your experience with FireClip app</string>

@@ -143,10 +143,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 });
                 builder.create().show();
                 return true;
-            case R.id.ic_action_feedback:
-                Intent feedbackIntent = new Intent(MainActivity.this, FeedbackActivity.class);
-                startActivity(feedbackIntent);
-                return true;
         }
         return drawerToggle.onOptionsItemSelected(item);
     }
@@ -226,6 +222,10 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 startActivity(Intent.createChooser(inviteIntent, getResources().getString(R.string.tell_friend_title_chooser)));
                 drawerLayout.closeDrawer(navigationView);
                 Toast.makeText(this, "Sharing with...", Toast.LENGTH_SHORT).show();
+                break;
+            case R.id.ic_nav_action_feedback:
+                Intent feedbackIntent = new Intent(MainActivity.this, FeedbackActivity.class);
+                startActivity(feedbackIntent);
                 break;
             // Bottom navigation items
             case R.id.action_bottom_nav_fav:
