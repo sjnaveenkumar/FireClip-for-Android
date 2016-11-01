@@ -224,6 +224,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 Toast.makeText(this, "Sharing with...", Toast.LENGTH_SHORT).show();
                 break;
             case R.id.ic_nav_action_feedback:
+                drawerLayout.closeDrawer(navigationView);
                 Intent feedbackIntent = new Intent(MainActivity.this, FeedbackActivity.class);
                 startActivity(feedbackIntent);
                 break;
