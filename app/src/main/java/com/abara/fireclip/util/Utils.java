@@ -27,6 +27,7 @@ public class Utils {
     public static final String REM_MANUAL_HIS_KEY = "rem_manual_history";
     public static final String INITIAL_CARD_KEY = "initial_card";
     public static final String SILENT_NOTIF_KEY = "silent_notif";
+    public static final String AUTO_ACCEPT_FILE_KEY = "auto_accept_file";
 
     // FireClip datamap keys
     public static final String DATA_MAP_CONTENT = "content";

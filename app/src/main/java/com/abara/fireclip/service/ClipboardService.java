@@ -18,7 +18,8 @@ import android.util.Log;
 
 import com.abara.fireclip.R;
 import com.abara.fireclip.SplashActivity;
-import com.abara.fireclip.receiver.AcceptActionReceiver;
+import com.abara.fireclip.receiver.AcceptClipActionReceiver;
+import com.abara.fireclip.receiver.AcceptFileActionReceiver;
 import com.abara.fireclip.util.Utils;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -44,17 +45,19 @@ import static android.content.ClipDescription.MIMETYPE_TEXT_PLAIN;
 public class ClipboardService extends Service {
 
     public static final int NEW_CLIP_NOTIFICATION_ID = 9976;
+    public static final int NEW_FILE_NOTIFICATION_ID = 3314;
+
     private static final String TAG = ClipboardService.class.getSimpleName();
     private ClipboardManager clipboardManager;
     private ClipboardManager.OnPrimaryClipChangedListener clipChangedListener;
     private ClipData.Item clipItem;
     private ClipData clipData;
 
-    private DatabaseReference userClipRef;
+    private DatabaseReference userClipRef, userFileRef;
     private SharedPreferences preferences;
-    private ValueEventListener clipValueListener;
+    private ValueEventListener clipValueListener, fileValueListener;
 
-    private String clipboardText = "", deviceName;
+    private String clipboardText = "", deviceName, lastFileURL = "";
 
     private NotificationManagerCompat manager;
 
@@ -73,7 +76,9 @@ public class ClipboardService extends Service {
 
         if (firebaseUser != null) {
 
-            userClipRef = FirebaseDatabase.getInstance().getReference("users").child(firebaseUser.getUid()).child("clip");
+            DatabaseReference userRef = FirebaseDatabase.getInstance().getReference("users").child(firebaseUser.getUid());
+            userClipRef = userRef.child("clip");
+            userFileRef = userRef.child("file");
 
             // Listen for local clipboard changes.
             clipChangedListener = new ClipboardManager.OnPrimaryClipChangedListener() {
@@ -144,13 +149,15 @@ public class ClipboardService extends Service {
                         if (!clipboardText.contentEquals(text)) {
 
                             getDeviceName();
+
+                            // Accept without confirmation if it is true.
                             boolean autoAccept = preferences.getBoolean(Utils.AUTO_ACCEPT_KEY, false);
 
                             if (!deviceName.contentEquals(from)) {
 
                                 NotificationCompat.Builder builder = new NotificationCompat.Builder(ClipboardService.this);
                                 builder.setContentTitle(from);
-                                builder.setContentText("You received a new clip.");
+                                builder.setContentText("You have a new clip.");
                                 boolean silentNotif = preferences.getBoolean(Utils.SILENT_NOTIF_KEY, false);
                                 if (!silentNotif) {
                                     builder.setSound(RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION));
@@ -168,12 +175,12 @@ public class ClipboardService extends Service {
                                 appIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                                 builder.setContentIntent(PendingIntent.getActivity(ClipboardService.this, 0, appIntent, PendingIntent.FLAG_UPDATE_CURRENT));
 
-                                Intent acceptReceiver = new Intent(ClipboardService.this, AcceptActionReceiver.class);
-                                acceptReceiver.putExtra(AcceptActionReceiver.TEXT_EXTRA, text);
-                                acceptReceiver.putExtra(AcceptActionReceiver.FROM_EXTRA, from);
-                                acceptReceiver.putExtra(AcceptActionReceiver.TIMESTAMP_EXTRA, timestamp);
+                                Intent acceptReceiver = new Intent(ClipboardService.this, AcceptClipActionReceiver.class);
+                                acceptReceiver.putExtra(AcceptClipActionReceiver.TEXT_EXTRA, text);
+                                acceptReceiver.putExtra(AcceptClipActionReceiver.FROM_EXTRA, from);
+                                acceptReceiver.putExtra(AcceptClipActionReceiver.TIMESTAMP_EXTRA, timestamp);
                                 if (!autoAccept) {
-                                    acceptReceiver.putExtra(AcceptActionReceiver.CLEAR_NOTIF_EXTRA, true);
+                                    acceptReceiver.putExtra(AcceptClipActionReceiver.CLEAR_NOTIF_EXTRA, true);
                                     PendingIntent acceptPI = PendingIntent.getBroadcast(ClipboardService.this, 0, acceptReceiver, PendingIntent.FLAG_UPDATE_CURRENT);
                                     builder.addAction(R.drawable.ic_done_white_24dp, "Accept", acceptPI);
                                 } else {
@@ -194,11 +201,86 @@ public class ClipboardService extends Service {
 
                 @Override
                 public void onCancelled(DatabaseError databaseError) {
-                    Log.e(TAG, "onCancelled: " + databaseError.getMessage());
+                    Log.e(TAG, "onCancelled clip listener : " + databaseError.getMessage());
+                }
+            };
+
+
+            /*
+            * Listen for new files from Firebase.
+            * */
+            fileValueListener = new ValueEventListener() {
+                @Override
+                public void onDataChange(DataSnapshot dataSnapshot) {
+
+                    if (dataSnapshot.getValue() != null) {
+
+                        String downloadURL = (String) dataSnapshot.child(Utils.DATA_MAP_CONTENT).getValue();
+                        String from = (String) dataSnapshot.child(Utils.DATA_MAP_FROM).getValue();
+                        //Long timestamp = (Long) dataSnapshot.child(Utils.DATA_MAP_TIME).getValue();
+
+                        if (!lastFileURL.contentEquals(downloadURL)) {
+
+                            getDeviceName();
+
+                            // Accept without confirmation if it is true.
+                            boolean autoAcceptFile = preferences.getBoolean(Utils.AUTO_ACCEPT_FILE_KEY, false);
+
+                            if (!deviceName.contentEquals(from)) {
+
+                                NotificationCompat.Builder builder = new NotificationCompat.Builder(ClipboardService.this);
+                                builder.setContentTitle(from);
+                                builder.setContentText("You have a new file.");
+                                boolean silentNotif = preferences.getBoolean(Utils.SILENT_NOTIF_KEY, false);
+                                if (!silentNotif) {
+                                    builder.setSound(RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION));
+                                    builder.setDefaults(NotificationCompat.DEFAULT_VIBRATE);
+                                }
+                                builder.setPriority(NotificationCompat.PRIORITY_HIGH);
+                                builder.setSmallIcon(R.drawable.ic_stat_notification);
+                                builder.setColor(ContextCompat.getColor(ClipboardService.this, R.color.colorPrimary));
+
+                                //builder.setStyle(new android.support.v4.app.NotificationCompat.BigPictureStyle().bigPicture(bitmap));
+
+                                Intent appIntent = new Intent(ClipboardService.this, SplashActivity.class);
+                                appIntent.setAction(Intent.ACTION_MAIN);
+                                appIntent.addCategory(Intent.CATEGORY_LAUNCHER);
+                                appIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                                builder.setContentIntent(PendingIntent.getActivity(ClipboardService.this, 0, appIntent, PendingIntent.FLAG_UPDATE_CURRENT));
+
+                                Intent acceptReceiver = new Intent(ClipboardService.this, AcceptFileActionReceiver.class);
+                                acceptReceiver.putExtra(AcceptFileActionReceiver.URL_EXTRA, downloadURL);
+                                //acceptReceiver.putExtra(AcceptClipActionReceiver.FROM_EXTRA, from);
+                                //acceptReceiver.putExtra(AcceptClipActionReceiver.TIMESTAMP_EXTRA, timestamp);
+                                if (!autoAcceptFile) {
+                                    acceptReceiver.putExtra(AcceptFileActionReceiver.CLEAR_NOTIF_EXTRA, true);
+                                    PendingIntent acceptPI = PendingIntent.getBroadcast(ClipboardService.this, 0, acceptReceiver, PendingIntent.FLAG_UPDATE_CURRENT);
+                                    builder.addAction(R.drawable.ic_done_white_24dp, "Accept", acceptPI);
+                                } else {
+                                    sendBroadcast(acceptReceiver);
+                                }
+
+                                lastFileURL = downloadURL;
+
+                                manager.notify(NEW_FILE_NOTIFICATION_ID, builder.build());
+                                Log.d(TAG, "Notification created for file : " + deviceName + " : " + from);
+
+                            }
+
+                        }
+
+                    }
+
+                }
+
+                @Override
+                public void onCancelled(DatabaseError databaseError) {
+                    Log.e(TAG, "onCancelled file listener : " + databaseError.getMessage());
                 }
             };
 
             userClipRef.addValueEventListener(clipValueListener);
+            userFileRef.addValueEventListener(fileValueListener);
 
         }
     }
@@ -239,6 +321,7 @@ public class ClipboardService extends Service {
     public void onDestroy() {
         clipboardManager.removePrimaryClipChangedListener(clipChangedListener);
         userClipRef.removeEventListener(clipValueListener);
+        userFileRef.removeEventListener(fileValueListener);
         manager.cancel(NEW_CLIP_NOTIFICATION_ID);
         Log.d(TAG, "onDestroy: Service destroyed!");
         super.onDestroy();

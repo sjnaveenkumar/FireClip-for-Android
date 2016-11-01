@@ -22,7 +22,7 @@ import java.util.Date;
 /*
 * BroadcastReceiver to accept the clips from notification.
 * */
-public class AcceptActionReceiver extends BroadcastReceiver {
+public class AcceptClipActionReceiver extends BroadcastReceiver {
 
     public static final String TEXT_EXTRA = "clip_text";
     public static final String FROM_EXTRA = "clip_from";

@@ -3,9 +3,11 @@
     package="com.abara.fireclip">
 
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <uses-permission android:name="android.permission.VIBRATE" />
-    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
 
     <application
         android:name=".FireClipApp"
@@ -34,6 +36,20 @@
         <activity android:name=".HistoryActivity" />
         <activity android:name=".FeedbackActivity" />
         <activity android:name=".SettingsActivity" />
+        <activity
+            android:name=".FileUploadActivity"
+            android:label="@string/fireclip_copy"
+            android:screenOrientation="portrait">
+            <intent-filter>
+                <action android:name="android.intent.action.SEND" />
+                <category android:name="android.intent.category.DEFAULT" />
+
+                <data android:mimeType="image/*" />
+                <data android:mimeType="video/*" />
+                <data android:mimeType="audio/*" />
+                <data android:mimeType="application/*" />
+            </intent-filter>
+        </activity>
 
         <service android:name=".service.ClipboardService" />
 
@@ -42,7 +58,8 @@
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
             </intent-filter>
         </receiver>
-        <receiver android:name=".receiver.AcceptActionReceiver" />
+        <receiver android:name=".receiver.AcceptClipActionReceiver" />
+        <receiver android:name=".receiver.AcceptFileActionReceiver" />
     </application>
 
 </manifest>

@@ -33,8 +33,8 @@ import io.realm.RealmResults;
 
 public class SettingsActivity extends AppCompatActivity implements View.OnClickListener, CompoundButton.OnCheckedChangeListener {
 
-    private LinearLayout enableLayout, autoAcceptLayout, remManualLayout, deviceNameLayout, silentNotifLayout;
-    private SwitchCompat enableSwitch, autoAcceptSwitch, remManualSwitch, silentNotifSwitch;
+    private LinearLayout enableLayout, autoAcceptLayout, remManualLayout, deviceNameLayout, silentNotifLayout, autoAcceptFileLayout;
+    private SwitchCompat enableSwitch, autoAcceptSwitch, remManualSwitch, silentNotifSwitch, autoAcceptFileSwitch;
     private AppCompatTextView deviceNameText;
 
     private SharedPreferences prefs;
@@ -57,11 +57,13 @@ public class SettingsActivity extends AppCompatActivity implements View.OnClickL
         remManualLayout = (LinearLayout) findViewById(R.id.settings_remember_his_layout);
         deviceNameLayout = (LinearLayout) findViewById(R.id.settings_device_name_layout);
         silentNotifLayout = (LinearLayout) findViewById(R.id.settings_silent_notif_layout);
+        autoAcceptFileLayout = (LinearLayout) findViewById(R.id.settings_auto_accept_file_layout);
 
         enableSwitch = (SwitchCompat) findViewById(R.id.settings_enable_switch);
         autoAcceptSwitch = (SwitchCompat) findViewById(R.id.settings_auto_accept_switch);
         remManualSwitch = (SwitchCompat) findViewById(R.id.settings_remember_his_switch);
         silentNotifSwitch = (SwitchCompat) findViewById(R.id.settings_silent_notif_switch);
+        autoAcceptFileSwitch = (SwitchCompat) findViewById(R.id.settings_auto_accept_file_switch);
 
         deviceNameText = (AppCompatTextView) findViewById(R.id.settings_device_name_title);
 
@@ -70,6 +72,7 @@ public class SettingsActivity extends AppCompatActivity implements View.OnClickL
         remManualLayout.setOnClickListener(this);
         deviceNameLayout.setOnClickListener(this);
         silentNotifLayout.setOnClickListener(this);
+        autoAcceptFileLayout.setOnClickListener(this);
 
         boolean enableService = prefs.getBoolean(Utils.ENABLE_SERVICE_KEY, true);
         enableSwitch.setChecked(enableService);
@@ -78,6 +81,11 @@ public class SettingsActivity extends AppCompatActivity implements View.OnClickL
         autoAcceptSwitch.setChecked(autoAccept);
         autoAcceptSwitch.setEnabled(enableService);
         autoAcceptLayout.setClickable(enableService);
+
+        boolean autoAcceptFiles = prefs.getBoolean(Utils.AUTO_ACCEPT_FILE_KEY, false);
+        autoAcceptFileSwitch.setChecked(autoAcceptFiles);
+        autoAcceptFileSwitch.setEnabled(enableService);
+        autoAcceptFileSwitch.setClickable(enableService);
 
         boolean silentNotif = prefs.getBoolean(Utils.SILENT_NOTIF_KEY, false);
         silentNotifSwitch.setChecked(silentNotif);
@@ -92,6 +100,7 @@ public class SettingsActivity extends AppCompatActivity implements View.OnClickL
         autoAcceptSwitch.setOnCheckedChangeListener(this);
         remManualSwitch.setOnCheckedChangeListener(this);
         silentNotifSwitch.setOnCheckedChangeListener(this);
+        autoAcceptFileSwitch.setOnCheckedChangeListener(this);
 
     }
 
@@ -124,6 +133,8 @@ public class SettingsActivity extends AppCompatActivity implements View.OnClickL
             case R.id.settings_silent_notif_layout:
                 toogleSwitch(silentNotifSwitch);
                 break;
+            case R.id.settings_auto_accept_file_layout:
+                toogleSwitch(autoAcceptFileSwitch);
         }
 
     }
@@ -159,6 +170,9 @@ public class SettingsActivity extends AppCompatActivity implements View.OnClickL
                 break;
             case R.id.settings_silent_notif_switch:
                 key = Utils.SILENT_NOTIF_KEY;
+                break;
+            case R.id.settings_auto_accept_file_switch:
+                key = Utils.AUTO_ACCEPT_FILE_KEY;
                 break;
         }
 
