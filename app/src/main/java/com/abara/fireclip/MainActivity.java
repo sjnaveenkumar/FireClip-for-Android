@@ -250,9 +250,13 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 inviteIntent.setAction(Intent.ACTION_SEND);
                 inviteIntent.putExtra(Intent.EXTRA_TEXT, getResources().getString(R.string.tell_friend_message));
                 inviteIntent.setType("text/plain");
-                startActivity(Intent.createChooser(inviteIntent, getResources().getString(R.string.tell_friend_title_chooser)));
-                drawerLayout.closeDrawer(navigationView);
-                Toast.makeText(this, "Sharing with...", Toast.LENGTH_SHORT).show();
+                if (inviteIntent.resolveActivity(getPackageManager()) != null) {
+                    startActivity(Intent.createChooser(inviteIntent, getResources().getString(R.string.tell_friend_title_chooser)));
+                    drawerLayout.closeDrawer(navigationView);
+                    Toast.makeText(this, "Sharing with...", Toast.LENGTH_SHORT).show();
+                } else {
+                    Toast.makeText(this, "No apps to share with!", Toast.LENGTH_SHORT).show();
+                }
                 break;
             case R.id.ic_nav_action_feedback:
                 drawerLayout.closeDrawer(navigationView);
