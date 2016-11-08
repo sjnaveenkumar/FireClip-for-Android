@@ -118,6 +118,7 @@ public class FileUploadActivity extends AppCompatActivity implements View.OnClic
                         uploadTask = userRef.putFile(fileUri, metaData);
 
                         // Firebase Storage upload task
+                        final String finalFileName = fileName;
                         uploadTask.addOnFailureListener(this, new OnFailureListener() {
                             @Override
                             public void onFailure(@NonNull Exception e) {
@@ -130,7 +131,7 @@ public class FileUploadActivity extends AppCompatActivity implements View.OnClic
                             public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
 
                                 // Sync to all devices.
-                                updateRealTimeDatabase(taskSnapshot);
+                                updateRealTimeDatabase(taskSnapshot, finalFileName);
 
                             }
 
@@ -177,7 +178,7 @@ public class FileUploadActivity extends AppCompatActivity implements View.OnClic
         }
     }
 
-    private void updateRealTimeDatabase(UploadTask.TaskSnapshot taskSnapshot) {
+    private void updateRealTimeDatabase(UploadTask.TaskSnapshot taskSnapshot, String fileName) {
 
         statusText.setText(getResources().getText(R.string.file_upload_syncing));
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
@@ -185,7 +186,7 @@ public class FileUploadActivity extends AppCompatActivity implements View.OnClic
         String deviceName = preferences.getString(Utils.DEVICE_NAME_KEY, DeviceName.getDeviceName());
 
         Uri downloadURL = taskSnapshot.getDownloadUrl();
-        Map<String, Object> map = Utils.generateMapClip(downloadURL.toString(), deviceName);
+        Map<String, Object> map = Utils.generateMapClip(downloadURL.toString(), deviceName, fileName);
 
         DatabaseReference fileRef = FirebaseDatabase.getInstance().getReference("users").child(user.getUid()).child("file");
         fileRef.setValue(map).addOnCompleteListener(this, new OnCompleteListener<Void>() {

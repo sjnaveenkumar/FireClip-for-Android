@@ -65,7 +65,7 @@
     <string name="home_history_loading">Loading history…</string>
     <string name="file_upload_copying">Copying file…</string>
     <string name="file_upload_cancel">Cancel</string>
-    <string name="fireclip_copy">Copy with FireClip</string>
+    <string name="fireclip_copy">Copy</string>
     <string name="file_upload_checking">Checking file…</string>
     <string name="file_upload_large_file_size">Oops.. File size is larger than 5MB</string>
     <string name="file_upload_invalid_file">Invalid file name and size</string>

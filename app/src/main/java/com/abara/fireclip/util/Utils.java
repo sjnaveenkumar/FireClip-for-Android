@@ -36,6 +36,7 @@ public class Utils {
     public static final String DATA_MAP_TIME_FAV = "timestamp_fav";
     public static final String DATA_MAP_KEY_FAV = "key_fav";
     public static final String DATA_MAP_FEED = "feedback";
+    public static final String DATA_MAP_FILENAME = "filename";
 
     /*
     * Method to insert a new clip into local database.
@@ -70,6 +71,15 @@ public class Utils {
         dataMap.put(Utils.DATA_MAP_TIME, timestamp);
         dataMap.put(Utils.DATA_MAP_KEY_FAV, key);
         dataMap.put(Utils.DATA_MAP_TIME_FAV, ServerValue.TIMESTAMP);
+        return dataMap;
+    }
+
+    /*
+    * Method to generate Map object for Files.
+    * */
+    public static Map<String, Object> generateMapClip(String s, String deviceName, String fileName) {
+        Map<String, Object> dataMap = generateMapClip(s, deviceName);
+        dataMap.put(DATA_MAP_FILENAME, fileName);
         return dataMap;
     }
 

@@ -11,8 +11,8 @@ import android.view.View;
 * */
 public interface FavItemClickListener {
 
-    public void onRemoveClick(String key);
+    void onRemoveClick(String key);
 
-    public void onItemClick(Favourite favourite);
+    void onItemClick(Favourite favourite);
 
 }

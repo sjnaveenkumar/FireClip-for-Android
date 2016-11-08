@@ -155,9 +155,10 @@ public class ClipboardService extends Service {
 
                             if (!deviceName.contentEquals(from)) {
 
+
                                 NotificationCompat.Builder builder = new NotificationCompat.Builder(ClipboardService.this);
-                                builder.setContentTitle(from);
-                                builder.setContentText("You have a new clip.");
+                                //builder.setContentTitle(from);
+                                //builder.setContentText("You have a new clip.");
                                 boolean silentNotif = preferences.getBoolean(Utils.SILENT_NOTIF_KEY, false);
                                 if (!silentNotif) {
                                     builder.setSound(RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION));
@@ -169,10 +170,7 @@ public class ClipboardService extends Service {
 
                                 builder.setStyle(new android.support.v4.app.NotificationCompat.BigTextStyle().bigText(text));
 
-                                Intent appIntent = new Intent(ClipboardService.this, SplashActivity.class);
-                                appIntent.setAction(Intent.ACTION_MAIN);
-                                appIntent.addCategory(Intent.CATEGORY_LAUNCHER);
-                                appIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                                Intent appIntent = getAppLaunchIntent();
                                 builder.setContentIntent(PendingIntent.getActivity(ClipboardService.this, 0, appIntent, PendingIntent.FLAG_UPDATE_CURRENT));
 
                                 Intent acceptReceiver = new Intent(ClipboardService.this, AcceptClipActionReceiver.class);
@@ -180,10 +178,14 @@ public class ClipboardService extends Service {
                                 acceptReceiver.putExtra(AcceptClipActionReceiver.FROM_EXTRA, from);
                                 acceptReceiver.putExtra(AcceptClipActionReceiver.TIMESTAMP_EXTRA, timestamp);
                                 if (!autoAccept) {
+                                    builder.setContentTitle("Clip from " + from);
+                                    builder.setContentText("You have a new clip.");
                                     acceptReceiver.putExtra(AcceptClipActionReceiver.CLEAR_NOTIF_EXTRA, true);
                                     PendingIntent acceptPI = PendingIntent.getBroadcast(ClipboardService.this, 0, acceptReceiver, PendingIntent.FLAG_UPDATE_CURRENT);
                                     builder.addAction(R.drawable.ic_done_white_24dp, "Accept", acceptPI);
                                 } else {
+                                    builder.setContentTitle("Clip copied from " + from);
+                                    builder.setContentText(text);
                                     sendBroadcast(acceptReceiver);
                                     Log.d(TAG, "Updated CB and DB : " + clipboardText + ", NEW TEXT : " + text);
                                 }
@@ -217,6 +219,7 @@ public class ClipboardService extends Service {
 
                         String downloadURL = (String) dataSnapshot.child(Utils.DATA_MAP_CONTENT).getValue();
                         String from = (String) dataSnapshot.child(Utils.DATA_MAP_FROM).getValue();
+                        String fileName = (String) dataSnapshot.child(Utils.DATA_MAP_FILENAME).getValue();
                         //Long timestamp = (Long) dataSnapshot.child(Utils.DATA_MAP_TIME).getValue();
 
                         if (!lastFileURL.contentEquals(downloadURL)) {
@@ -229,8 +232,10 @@ public class ClipboardService extends Service {
                             if (!deviceName.contentEquals(from)) {
 
                                 NotificationCompat.Builder builder = new NotificationCompat.Builder(ClipboardService.this);
-                                builder.setContentTitle(from);
-                                builder.setContentText("You have a new file.");
+                                builder.setContentTitle("File from " + from);
+                                builder.setContentText(fileName);
+
+                                // Silence notification.
                                 boolean silentNotif = preferences.getBoolean(Utils.SILENT_NOTIF_KEY, false);
                                 if (!silentNotif) {
                                     builder.setSound(RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION));
@@ -240,20 +245,14 @@ public class ClipboardService extends Service {
                                 builder.setSmallIcon(R.drawable.ic_stat_notification);
                                 builder.setColor(ContextCompat.getColor(ClipboardService.this, R.color.colorPrimary));
 
-                                //builder.setStyle(new android.support.v4.app.NotificationCompat.BigPictureStyle().bigPicture(bitmap));
-
-                                Intent appIntent = new Intent(ClipboardService.this, SplashActivity.class);
-                                appIntent.setAction(Intent.ACTION_MAIN);
-                                appIntent.addCategory(Intent.CATEGORY_LAUNCHER);
-                                appIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                                // Intent to launch the app.
+                                Intent appIntent = getAppLaunchIntent();
                                 builder.setContentIntent(PendingIntent.getActivity(ClipboardService.this, 0, appIntent, PendingIntent.FLAG_UPDATE_CURRENT));
 
                                 Intent acceptReceiver = new Intent(ClipboardService.this, AcceptFileActionReceiver.class);
                                 acceptReceiver.putExtra(AcceptFileActionReceiver.URL_EXTRA, downloadURL);
-                                //acceptReceiver.putExtra(AcceptClipActionReceiver.FROM_EXTRA, from);
-                                //acceptReceiver.putExtra(AcceptClipActionReceiver.TIMESTAMP_EXTRA, timestamp);
+
                                 if (!autoAcceptFile) {
-                                    acceptReceiver.putExtra(AcceptFileActionReceiver.CLEAR_NOTIF_EXTRA, true);
                                     PendingIntent acceptPI = PendingIntent.getBroadcast(ClipboardService.this, 0, acceptReceiver, PendingIntent.FLAG_UPDATE_CURRENT);
                                     builder.addAction(R.drawable.ic_done_white_24dp, "Accept", acceptPI);
                                 } else {
@@ -283,6 +282,17 @@ public class ClipboardService extends Service {
             userFileRef.addValueEventListener(fileValueListener);
 
         }
+    }
+
+    /*
+    * Method to get the app's launch intent.
+    * */
+    private Intent getAppLaunchIntent() {
+        Intent appIntent = new Intent(ClipboardService.this, SplashActivity.class);
+        appIntent.setAction(Intent.ACTION_MAIN);
+        appIntent.addCategory(Intent.CATEGORY_LAUNCHER);
+        appIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        return appIntent;
     }
 
     /*
