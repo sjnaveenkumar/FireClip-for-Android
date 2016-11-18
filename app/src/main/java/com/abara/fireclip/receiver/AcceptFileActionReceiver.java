@@ -37,9 +37,9 @@ import java.io.File;
 public class AcceptFileActionReceiver extends BroadcastReceiver {
 
     public static final String URL_EXTRA = "url_file";
+    public static final String FILENAME_EXTRA = "file_name";
     private static final long MIN_UPDATE_INTERVAL = 1200;
     private static final int DOWNLOAD_NOTIF_ID = 4;
-
     private StorageReference fileRef;
 
     private String fileName, mimeType;
@@ -57,17 +57,15 @@ public class AcceptFileActionReceiver extends BroadcastReceiver {
         this.context = context;
 
         String url = intent.getStringExtra(URL_EXTRA);
+        fileName = intent.getStringExtra(FILENAME_EXTRA);
 
         fileRef = FirebaseStorage.getInstance().getReferenceFromUrl(url);
-
-        fileName = "unknown_file";
 
         // Getting meta data of the file.
         fileRef.getMetadata().addOnSuccessListener(new OnSuccessListener<StorageMetadata>() {
             @Override
             public void onSuccess(StorageMetadata storageMetadata) {
 
-                fileName = storageMetadata.getCustomMetadata("filename");
                 mimeType = storageMetadata.getContentType();
                 Log.d("ABB", "onSuccess: File name is " + fileName);
                 Log.d("ABB", "onSuccess: File mime type is " + mimeType);
@@ -130,7 +128,7 @@ public class AcceptFileActionReceiver extends BroadcastReceiver {
                 Uri fileUri = FileProvider.getUriForFile(context, context.getApplicationContext().getPackageName() + ".provider", theFile);
 
                 // Launch the media scanner for downloaded file.
-                context.sendBroadcast(new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, fileUri));
+                context.sendBroadcast(new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, Uri.fromFile(theFile)));
 
                 // Update notification.
                 updateNotification(builder, "File saved successfully!");

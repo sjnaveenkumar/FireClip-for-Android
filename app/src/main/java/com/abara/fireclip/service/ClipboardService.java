@@ -258,6 +258,7 @@ public class ClipboardService extends Service {
 
                                 Intent acceptReceiver = new Intent(ClipboardService.this, AcceptFileActionReceiver.class);
                                 acceptReceiver.putExtra(AcceptFileActionReceiver.URL_EXTRA, downloadURL);
+                                acceptReceiver.putExtra(AcceptFileActionReceiver.FILENAME_EXTRA,fileName);
 
                                 if (!autoAcceptFile) {
                                     PendingIntent acceptPI = PendingIntent.getBroadcast(ClipboardService.this, 0, acceptReceiver, PendingIntent.FLAG_UPDATE_CURRENT);
