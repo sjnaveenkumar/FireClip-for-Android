@@ -13,6 +13,7 @@ import android.support.v4.content.FileProvider;
 import android.support.v7.app.NotificationCompat;
 import android.util.Log;
 
+import com.abara.fireclip.FeedbackActivity;
 import com.abara.fireclip.R;
 import com.abara.fireclip.service.ClipboardService;
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -139,6 +140,8 @@ public class AcceptFileActionReceiver extends BroadcastReceiver {
                 openIntent.setDataAndType(fileUri, mimeType);
                 openIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 
+                addFeedbackAction(builder);
+
                 PendingIntent pi = PendingIntent.getActivity(context, 0, openIntent, PendingIntent.FLAG_CANCEL_CURRENT);
                 builder.setContentIntent(pi);
 
@@ -152,6 +155,8 @@ public class AcceptFileActionReceiver extends BroadcastReceiver {
                 // Update notification.
                 updateNotification(builder, "Failed to get file!");
 
+                addFeedbackAction(builder);
+
                 manager.notify(DOWNLOAD_NOTIF_ID, builder.build());
 
                 e.printStackTrace();
@@ -159,6 +164,15 @@ public class AcceptFileActionReceiver extends BroadcastReceiver {
             }
         });
 
+    }
+
+    /*
+    * Method to set feedback action to notification.
+    * */
+    private void addFeedbackAction(NotificationCompat.Builder builder) {
+        Intent feedbackIntent = new Intent(context, FeedbackActivity.class);
+        PendingIntent pi = PendingIntent.getActivity(context, 0, feedbackIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+        builder.addAction(R.drawable.ic_action_feedback, "Send Feedback", pi);
     }
 
     /*

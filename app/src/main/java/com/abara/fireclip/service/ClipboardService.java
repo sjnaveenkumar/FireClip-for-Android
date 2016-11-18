@@ -258,21 +258,21 @@ public class ClipboardService extends Service {
 
                                 Intent acceptReceiver = new Intent(ClipboardService.this, AcceptFileActionReceiver.class);
                                 acceptReceiver.putExtra(AcceptFileActionReceiver.URL_EXTRA, downloadURL);
-                                acceptReceiver.putExtra(AcceptFileActionReceiver.FILENAME_EXTRA,fileName);
+                                acceptReceiver.putExtra(AcceptFileActionReceiver.FILENAME_EXTRA, fileName);
 
                                 if (!autoAcceptFile) {
                                     PendingIntent acceptPI = PendingIntent.getBroadcast(ClipboardService.this, 0, acceptReceiver, PendingIntent.FLAG_UPDATE_CURRENT);
                                     builder.addAction(R.drawable.ic_done_white_24dp, "Accept", acceptPI);
+
+                                    addFeedbackAction(builder);
+                                    manager.notify(NEW_FILE_NOTIFICATION_ID, builder.build());
                                 } else {
                                     sendBroadcast(acceptReceiver);
                                 }
 
-                                addFeedbackAction(builder);
-
                                 lastFileURL = downloadURL;
                                 preferences.edit().putString(Utils.LAST_DOWNLOAD_URL_KEY, lastFileURL).commit();
 
-                                manager.notify(NEW_FILE_NOTIFICATION_ID, builder.build());
                                 Log.d(TAG, "Notification created for file : " + deviceName + " : " + from);
 
                             }
@@ -295,6 +295,9 @@ public class ClipboardService extends Service {
         }
     }
 
+    /*
+    * Method to set feedback action to notification.
+    * */
     private void addFeedbackAction(NotificationCompat.Builder builder) {
         Intent feedbackIntent = new Intent(this, FeedbackActivity.class);
         PendingIntent pi = PendingIntent.getActivity(this, 0, feedbackIntent, PendingIntent.FLAG_UPDATE_CURRENT);

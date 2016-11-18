@@ -268,18 +268,27 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 if (!(currentFragment instanceof FavouritesFragment)) {
                     currentFragment = new FavouritesFragment();
                     showFragment();
+                    bottomNavigation.getMenu().getItem(0).setChecked(true);
+                    bottomNavigation.getMenu().getItem(1).setChecked(false);
+                    bottomNavigation.getMenu().getItem(2).setChecked(false);
                 }
                 break;
             case R.id.action_bottom_nav_home:
                 if (!(currentFragment instanceof HomeFragment)) {
                     currentFragment = new HomeFragment();
                     showFragment();
+                    bottomNavigation.getMenu().getItem(1).setChecked(true);
+                    bottomNavigation.getMenu().getItem(0).setChecked(false);
+                    bottomNavigation.getMenu().getItem(2).setChecked(false);
                 }
                 break;
             case R.id.action_bottom_nav_history:
                 if (!(currentFragment instanceof HistoryFragment)) {
                     currentFragment = new HistoryFragment();
                     showFragment();
+                    bottomNavigation.getMenu().getItem(2).setChecked(true);
+                    bottomNavigation.getMenu().getItem(1).setChecked(false);
+                    bottomNavigation.getMenu().getItem(0).setChecked(false);
                 }
                 break;
         }
