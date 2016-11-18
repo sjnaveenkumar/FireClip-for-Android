@@ -43,6 +43,7 @@
                     android:gravity="start"
                     android:hint="@string/feedback_hint"
                     android:inputType="textMultiLine"
+                    android:lines="3"
                     android:textColor="@color/colorBlack" />
 
                 <android.support.v7.widget.AppCompatButton

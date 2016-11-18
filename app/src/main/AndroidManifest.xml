@@ -38,6 +38,7 @@
         <activity android:name=".SettingsActivity" />
         <activity
             android:name=".FileUploadActivity"
+            android:excludeFromRecents="true"
             android:label="@string/fireclip_copy"
             android:screenOrientation="portrait">
             <intent-filter>
@@ -60,6 +61,19 @@
         </receiver>
         <receiver android:name=".receiver.AcceptClipActionReceiver" />
         <receiver android:name=".receiver.AcceptFileActionReceiver" />
+
+        <!-- Using FileProvider class on API >= 24
+        to give file access to external apps-->
+        <provider
+            android:name="android.support.v4.content.FileProvider"
+            android:authorities="com.abara.fireclip.provider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/provider_paths" />
+        </provider>
+
     </application>
 
 </manifest>

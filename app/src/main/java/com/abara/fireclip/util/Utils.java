@@ -28,6 +28,7 @@ public class Utils {
     public static final String INITIAL_CARD_KEY = "initial_card";
     public static final String SILENT_NOTIF_KEY = "silent_notif";
     public static final String AUTO_ACCEPT_FILE_KEY = "auto_accept_file";
+    public static final String LAST_DOWNLOAD_URL_KEY = "last_download_url";
 
     // FireClip datamap keys
     public static final String DATA_MAP_CONTENT = "content";

@@ -37,6 +37,7 @@
 
     <style name="Theme.Splash" parent="Theme.AppCompat.Light">
         <!--<item name="android:windowBackground">@drawable/splash_screen</item>-->
+        <item name="android:windowBackground">@color/colorPrimary</item>
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
     </style>

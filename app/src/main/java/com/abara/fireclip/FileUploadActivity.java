@@ -62,6 +62,9 @@ public class FileUploadActivity extends AppCompatActivity implements View.OnClic
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         setContentView(R.layout.activity_file_upload);
 
+
+        statusText = (AppCompatTextView) findViewById(R.id.file_upload_status);
+
         // To check whether the user is signed in or not.
         user = FirebaseAuth.getInstance().getCurrentUser();
         if (user != null) {
@@ -74,8 +77,7 @@ public class FileUploadActivity extends AppCompatActivity implements View.OnClic
                 cancelBtn.setOnClickListener(this);
 
                 // Upload status text
-                statusText = (AppCompatTextView) findViewById(R.id.file_upload_status);
-                statusText.setText(getResources().getText(R.string.file_upload_checking));
+                statusText.setText(getResources().getString(R.string.file_upload_checking));
 
                 // Get the intent.
                 Intent intent = getIntent();
@@ -101,7 +103,7 @@ public class FileUploadActivity extends AppCompatActivity implements View.OnClic
                     // Upload only if file size is within FILE_SIZE_LIMIT
                     if (fileSize <= FILE_SIZE_LIMIT) {
 
-                        statusText.setText(getResources().getText(R.string.file_upload_copying));
+                        statusText.setText(getResources().getString(R.string.file_upload_copying));
 
                         // Set file name to custom meta data.
                         // So that other devices receive with the same file name.
@@ -152,19 +154,19 @@ public class FileUploadActivity extends AppCompatActivity implements View.OnClic
 
                     } else {
 
-                        statusText.setText(getResources().getText(R.string.file_upload_large_file_size));
+                        statusText.setText(getResources().getString(R.string.file_upload_large_file_size));
 
                     }
                 } else {
 
-                    statusText.setText(getResources().getText(R.string.file_upload_invalid_file));
+                    statusText.setText(getResources().getString(R.string.file_upload_invalid_file));
 
                 }
 
             } else {
 
                 // Device is offline.
-                statusText.setText(getResources().getText(R.string.file_upload_offline));
+                statusText.setText(getResources().getString(R.string.file_upload_offline));
 
             }
 
@@ -180,7 +182,7 @@ public class FileUploadActivity extends AppCompatActivity implements View.OnClic
 
     private void updateRealTimeDatabase(UploadTask.TaskSnapshot taskSnapshot, String fileName) {
 
-        statusText.setText(getResources().getText(R.string.file_upload_syncing));
+        statusText.setText(getResources().getString(R.string.file_upload_syncing));
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
 
         String deviceName = preferences.getString(Utils.DEVICE_NAME_KEY, DeviceName.getDeviceName());

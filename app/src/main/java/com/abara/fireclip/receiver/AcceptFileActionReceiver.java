@@ -9,6 +9,7 @@ import android.os.Environment;
 import android.support.annotation.NonNull;
 import android.support.v4.app.NotificationManagerCompat;
 import android.support.v4.content.ContextCompat;
+import android.support.v4.content.FileProvider;
 import android.support.v7.app.NotificationCompat;
 import android.util.Log;
 
@@ -36,7 +37,7 @@ import java.io.File;
 public class AcceptFileActionReceiver extends BroadcastReceiver {
 
     public static final String URL_EXTRA = "url_file";
-    private static final long MIN_UPDATE_INTERVAL = 2000;
+    private static final long MIN_UPDATE_INTERVAL = 1200;
     private static final int DOWNLOAD_NOTIF_ID = 4;
 
     private StorageReference fileRef;
@@ -68,7 +69,8 @@ public class AcceptFileActionReceiver extends BroadcastReceiver {
 
                 fileName = storageMetadata.getCustomMetadata("filename");
                 mimeType = storageMetadata.getContentType();
-                Log.d("ABARA", "onSuccess: File name is " + fileName);
+                Log.d("ABB", "onSuccess: File name is " + fileName);
+                Log.d("ABB", "onSuccess: File mime type is " + mimeType);
 
                 downloadFile();
                 manager.cancel(ClipboardService.NEW_FILE_NOTIFICATION_ID);
@@ -111,7 +113,7 @@ public class AcceptFileActionReceiver extends BroadcastReceiver {
                 if ((System.currentTimeMillis() - lastUpdateTime) <= MIN_UPDATE_INTERVAL) return;
 
                 int progress = (int) ((100 * taskSnapshot.getBytesTransferred()) / taskSnapshot.getTotalByteCount());
-                Log.d("LV", "onProgress: Progress: " + progress);
+                Log.d("ABB", "onProgress: Progress: " + progress);
                 builder.setProgress(100, progress, false);
 
                 builder.setOngoing(true);
@@ -125,18 +127,21 @@ public class AcceptFileActionReceiver extends BroadcastReceiver {
             @Override
             public void onComplete(@NonNull Task<FileDownloadTask.TaskSnapshot> task) {
 
+                Uri fileUri = FileProvider.getUriForFile(context, context.getApplicationContext().getPackageName() + ".provider", theFile);
+
                 // Launch the media scanner for downloaded file.
-                context.sendBroadcast(new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, Uri.fromFile(theFile)));
+                context.sendBroadcast(new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, fileUri));
 
                 // Update notification.
                 updateNotification(builder, "File saved successfully!");
+                builder.setAutoCancel(true);
 
                 // View the file after tapping on the notification.
                 Intent openIntent = new Intent(Intent.ACTION_VIEW);
-                openIntent.setData(Uri.fromFile(theFile));
-                openIntent.setType(mimeType);
+                openIntent.setDataAndType(fileUri, mimeType);
+                openIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 
-                PendingIntent pi = PendingIntent.getActivity(context, 0, openIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+                PendingIntent pi = PendingIntent.getActivity(context, 0, openIntent, PendingIntent.FLAG_CANCEL_CURRENT);
                 builder.setContentIntent(pi);
 
                 manager.notify(DOWNLOAD_NOTIF_ID, builder.build());
@@ -165,6 +170,7 @@ public class AcceptFileActionReceiver extends BroadcastReceiver {
         builder.setContentText(content);
         builder.setProgress(0, 0, false);
         builder.setOngoing(false);
+        builder.setTicker(content);
     }
 
 }

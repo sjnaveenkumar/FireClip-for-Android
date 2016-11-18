@@ -16,6 +16,7 @@ import android.support.v4.content.ContextCompat;
 import android.support.v7.app.NotificationCompat;
 import android.util.Log;
 
+import com.abara.fireclip.FeedbackActivity;
 import com.abara.fireclip.R;
 import com.abara.fireclip.SplashActivity;
 import com.abara.fireclip.receiver.AcceptClipActionReceiver;
@@ -190,6 +191,8 @@ public class ClipboardService extends Service {
                                     Log.d(TAG, "Updated CB and DB : " + clipboardText + ", NEW TEXT : " + text);
                                 }
 
+                                addFeedbackAction(builder);
+
                                 clipboardText = text;
 
                                 manager.notify(NEW_CLIP_NOTIFICATION_ID, builder.build());
@@ -222,6 +225,8 @@ public class ClipboardService extends Service {
                         String fileName = (String) dataSnapshot.child(Utils.DATA_MAP_FILENAME).getValue();
                         //Long timestamp = (Long) dataSnapshot.child(Utils.DATA_MAP_TIME).getValue();
 
+                        lastFileURL = preferences.getString(Utils.LAST_DOWNLOAD_URL_KEY, "");
+
                         if (!lastFileURL.contentEquals(downloadURL)) {
 
                             getDeviceName();
@@ -234,6 +239,7 @@ public class ClipboardService extends Service {
                                 NotificationCompat.Builder builder = new NotificationCompat.Builder(ClipboardService.this);
                                 builder.setContentTitle("File from " + from);
                                 builder.setContentText(fileName);
+                                builder.setTicker("New file from " + from);
 
                                 // Silence notification.
                                 boolean silentNotif = preferences.getBoolean(Utils.SILENT_NOTIF_KEY, false);
@@ -244,6 +250,7 @@ public class ClipboardService extends Service {
                                 builder.setPriority(NotificationCompat.PRIORITY_HIGH);
                                 builder.setSmallIcon(R.drawable.ic_stat_notification);
                                 builder.setColor(ContextCompat.getColor(ClipboardService.this, R.color.colorPrimary));
+                                builder.setAutoCancel(true);
 
                                 // Intent to launch the app.
                                 Intent appIntent = getAppLaunchIntent();
@@ -259,7 +266,10 @@ public class ClipboardService extends Service {
                                     sendBroadcast(acceptReceiver);
                                 }
 
+                                addFeedbackAction(builder);
+
                                 lastFileURL = downloadURL;
+                                preferences.edit().putString(Utils.LAST_DOWNLOAD_URL_KEY, lastFileURL).commit();
 
                                 manager.notify(NEW_FILE_NOTIFICATION_ID, builder.build());
                                 Log.d(TAG, "Notification created for file : " + deviceName + " : " + from);
@@ -282,6 +292,12 @@ public class ClipboardService extends Service {
             userFileRef.addValueEventListener(fileValueListener);
 
         }
+    }
+
+    private void addFeedbackAction(NotificationCompat.Builder builder) {
+        Intent feedbackIntent = new Intent(this, FeedbackActivity.class);
+        PendingIntent pi = PendingIntent.getActivity(this, 0, feedbackIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+        builder.addAction(R.drawable.ic_action_feedback, "Send Feedback", pi);
     }
 
     /*
@@ -314,6 +330,7 @@ public class ClipboardService extends Service {
     * */
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
+
         if (clipboardManager.hasPrimaryClip()) {
             if (clipboardManager.getPrimaryClipDescription().hasMimeType(MIMETYPE_TEXT_PLAIN)) {
                 clipData = clipboardManager.getPrimaryClip();
@@ -321,6 +338,9 @@ public class ClipboardService extends Service {
                 clipboardText = clipItem.getText().toString();
             }
         }
+
+        lastFileURL = preferences.getString(Utils.LAST_DOWNLOAD_URL_KEY, "");
+
         return START_STICKY;
     }
 
