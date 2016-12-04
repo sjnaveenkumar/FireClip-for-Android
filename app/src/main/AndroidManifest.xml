@@ -40,7 +40,8 @@
             android:name=".FileUploadActivity"
             android:excludeFromRecents="true"
             android:label="@string/fireclip_copy"
-            android:screenOrientation="portrait">
+            android:screenOrientation="portrait"
+            android:theme="@style/Theme.Dialog">
             <intent-filter>
                 <action android:name="android.intent.action.SEND" />
                 <category android:name="android.intent.category.DEFAULT" />

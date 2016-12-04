@@ -59,9 +59,9 @@ public class FileUploadActivity extends AppCompatActivity implements View.OnClic
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        getWindow().requestFeature(Window.FEATURE_NO_TITLE);
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         setContentView(R.layout.activity_file_upload);
-
 
         statusText = (AppCompatTextView) findViewById(R.id.file_upload_status);
 
@@ -96,7 +96,7 @@ public class FileUploadActivity extends AppCompatActivity implements View.OnClic
                     fileName = cursor.getString(cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME));
                     fileSize = cursor.getLong(cursor.getColumnIndex(OpenableColumns.SIZE));
                 }
-
+                cursor.close();
                 // Check for file name and size.
                 if (fileSize != 0) {
 
