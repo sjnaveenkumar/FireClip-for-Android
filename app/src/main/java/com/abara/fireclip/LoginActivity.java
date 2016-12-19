@@ -18,19 +18,19 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Toast;
 
+import com.abara.fireclip.util.FireClipUtils;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.messaging.FirebaseMessaging;
 
 /**
+ * Activity to login to FireClip.
+ * <p>
  * Created by abara on 24/09/16.
  */
-
-/*
-* Activity to login to FireClip.
-* */
 public class LoginActivity extends AppCompatActivity implements View.OnClickListener {
 
     private FirebaseAuth firebaseAuth;
@@ -54,9 +54,10 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
         signInButton.setOnClickListener(this);
         forgotPassView.setOnClickListener(this);
 
-        /*
-        * Listen for auth changes, start device activity after FireClip SignIn.
-        * */
+        /**
+         * Listen for auth changes, start device activity after SignIn and,
+         * subscribe to topic, to receive push notification.
+         */
         authStateListener = new FirebaseAuth.AuthStateListener() {
             @Override
             public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
@@ -64,9 +65,11 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                 FirebaseUser user = firebaseAuth.getCurrentUser();
 
                 if (user != null) {
-                    Intent deviceActivity = new Intent(LoginActivity.this, DeviceNameActivity.class);
-                    deviceActivity.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
+                    Intent deviceActivity = DeviceNameActivity.getStarterIntent(LoginActivity.this, false);
                     startActivity(deviceActivity);
+
+                    // Subscribe to user's UID as topic, to receive push notifications.
+                    FireClipUtils.subscribe();
                 }
 
             }
@@ -74,9 +77,9 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
 
     }
 
-    /*
-    * Signin or launch forget password dialog.
-    * */
+    /**
+     * Handle clicks for Sign in and launch forget password dialog.
+     */
     @Override
     public void onClick(View view) {
         switch (view.getId()) {
@@ -89,16 +92,16 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
         }
     }
 
-    /*
-    * Show forget password dialog.
-    * */
+    /**
+     * Show forget password dialog.
+     */
     private void launchForgotPasswordDialog() {
 
         final View view = LayoutInflater.from(this).inflate(R.layout.dialog_forgot_pass, null);
 
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setView(view)
-                .setPositiveButton("Send", new DialogInterface.OnClickListener() {
+                .setPositiveButton(R.string.action_send, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int i) {
 
@@ -125,7 +128,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
 
                     }
                 }).
-                setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                setNegativeButton(R.string.action_cancel, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int i) {
                         dialog.dismiss();
@@ -137,9 +140,9 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
 
     }
 
-    /*
-    * Signin using email and password.
-    * */
+    /**
+     * Validate and Sign in using email and password.
+     */
     private void signIn() {
 
         String email = emailBox.getText().toString();
@@ -172,18 +175,18 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
 
     }
 
-    /*
-    * Add auth state listener.
-    * */
+    /**
+     * Add auth state listener.
+     */
     @Override
     protected void onStart() {
         super.onStart();
         firebaseAuth.addAuthStateListener(authStateListener);
     }
 
-    /*
-    * Remove auth state listener.
-    * */
+    /**
+     * Remove auth state listener.
+     */
     @Override
     protected void onStop() {
         super.onStop();

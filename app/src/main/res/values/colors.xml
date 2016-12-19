@@ -6,11 +6,14 @@
     <color name="windowBackgroundColor">#FAFAFA</color>
     <color name="colorWhite">#FFFFFF</color>
     <color name="colorBlack">#212121</color>-->
-    <color name="colorPrimary">#2979FF</color>
-    <color name="colorPrimaryDark">#2962FF</color>
+    <!--<color name="colorPrimary">#2979FF</color>
+    <color name="colorPrimaryDark">#2962FF</color>-->
+    <color name="colorPrimary">#2d384a</color>
+    <color name="colorPrimaryDark">#1F2733</color>
     <color name="colorAccent">#FF4081</color>
     <color name="windowBackgroundColor">#FAFAFA</color>
     <color name="colorWhite">#FFFFFF</color>
     <color name="colorBlack">#212121</color>
     <color name="colorGray">#E0E0E0</color>
+    <color name="colorBlueGray">#ECEFF1</color>
 </resources>

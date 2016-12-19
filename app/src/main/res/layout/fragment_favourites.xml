@@ -22,7 +22,7 @@
             android:layout_gravity="center"
             android:layout_marginBottom="8dp"
             android:layout_marginTop="8dp"
-            android:text="@string/home_favorites_loading"
+            android:text="@string/home_pins_loading"
             android:textAppearance="?android:attr/textAppearanceSmall"
             android:textColor="@color/colorBlack"
             android:textStyle="bold" />

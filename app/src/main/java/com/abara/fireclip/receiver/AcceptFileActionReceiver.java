@@ -11,11 +11,10 @@ import android.support.v4.app.NotificationManagerCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.content.FileProvider;
 import android.support.v7.app.NotificationCompat;
-import android.util.Log;
 
-import com.abara.fireclip.FeedbackActivity;
 import com.abara.fireclip.R;
-import com.abara.fireclip.service.ClipboardService;
+import com.abara.fireclip.service.NotificationService;
+import com.abara.fireclip.util.AndroidUtils;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -29,16 +28,14 @@ import com.google.firebase.storage.StorageReference;
 import java.io.File;
 
 /**
+ * BroadcastReceiver to download the files.
+ * <p>
  * Created by abara on 01/11/16.
  */
-
-/*
-* BroadcastReceiver to download the files.
-* */
 public class AcceptFileActionReceiver extends BroadcastReceiver {
 
-    public static final String URL_EXTRA = "url_file";
-    public static final String FILENAME_EXTRA = "file_name";
+    private static final String EXTRA_URL = "url_file";
+    private static final String EXTRA_FILENAME = "file_name";
     private static final long MIN_UPDATE_INTERVAL = 1200;
     private static final int DOWNLOAD_NOTIF_ID = 4;
     private StorageReference fileRef;
@@ -46,19 +43,27 @@ public class AcceptFileActionReceiver extends BroadcastReceiver {
     private String fileName, mimeType;
     private Context context;
 
+    private NotificationCompat.Builder builder;
     private NotificationManagerCompat manager;
 
     // Variable to control the download notification's progress.
     private long lastUpdateTime = System.currentTimeMillis();
 
+    public static Intent getStarterIntent(Context context, String url, String fileName) {
+        Intent acceptIntent = new Intent(context, AcceptFileActionReceiver.class);
+        acceptIntent.putExtra(EXTRA_URL, url);
+        acceptIntent.putExtra(EXTRA_FILENAME, fileName);
+        return acceptIntent;
+    }
+
     @Override
     public void onReceive(Context context, Intent intent) {
 
-        manager = NotificationManagerCompat.from(context);
         this.context = context;
+        manager = NotificationManagerCompat.from(context);
 
-        String url = intent.getStringExtra(URL_EXTRA);
-        fileName = intent.getStringExtra(FILENAME_EXTRA);
+        String url = intent.getStringExtra(EXTRA_URL);
+        fileName = intent.getStringExtra(EXTRA_FILENAME);
 
         fileRef = FirebaseStorage.getInstance().getReferenceFromUrl(url);
 
@@ -68,11 +73,9 @@ public class AcceptFileActionReceiver extends BroadcastReceiver {
             public void onSuccess(StorageMetadata storageMetadata) {
 
                 mimeType = storageMetadata.getContentType();
-                Log.d("ABB", "onSuccess: File name is " + fileName);
-                Log.d("ABB", "onSuccess: File mime type is " + mimeType);
 
                 downloadFile();
-                manager.cancel(ClipboardService.NEW_FILE_NOTIFICATION_ID);
+                manager.cancel(NotificationService.NOTIF_FILE_ID);
 
             }
         }).addOnFailureListener(new OnFailureListener() {
@@ -89,7 +92,7 @@ public class AcceptFileActionReceiver extends BroadcastReceiver {
     * */
     private void downloadFile() {
 
-        final NotificationCompat.Builder builder = new NotificationCompat.Builder(context);
+        builder = new NotificationCompat.Builder(context);
 
         builder.setContentTitle(fileName)
                 .setContentText("Getting file...")
@@ -112,7 +115,7 @@ public class AcceptFileActionReceiver extends BroadcastReceiver {
                 if ((System.currentTimeMillis() - lastUpdateTime) <= MIN_UPDATE_INTERVAL) return;
 
                 int progress = (int) ((100 * taskSnapshot.getBytesTransferred()) / taskSnapshot.getTotalByteCount());
-                Log.d("ABB", "onProgress: Progress: " + progress);
+
                 builder.setProgress(100, progress, false);
 
                 builder.setOngoing(true);
@@ -132,7 +135,7 @@ public class AcceptFileActionReceiver extends BroadcastReceiver {
                 context.sendBroadcast(new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, Uri.fromFile(theFile)));
 
                 // Update notification.
-                updateNotification(builder, "File saved successfully!");
+                updateNotification("File saved successfully!");
                 builder.setAutoCancel(true);
 
                 // View the file after tapping on the notification.
@@ -140,7 +143,7 @@ public class AcceptFileActionReceiver extends BroadcastReceiver {
                 openIntent.setDataAndType(fileUri, mimeType);
                 openIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 
-                addFeedbackAction(builder);
+                AndroidUtils.addFeedbackAction(context, builder);
 
                 PendingIntent pi = PendingIntent.getActivity(context, 0, openIntent, PendingIntent.FLAG_CANCEL_CURRENT);
                 builder.setContentIntent(pi);
@@ -153,9 +156,9 @@ public class AcceptFileActionReceiver extends BroadcastReceiver {
             public void onFailure(@NonNull Exception e) {
 
                 // Update notification.
-                updateNotification(builder, "Failed to get file!");
+                updateNotification("Failed to get file!");
 
-                addFeedbackAction(builder);
+                AndroidUtils.addFeedbackAction(context, builder);
 
                 manager.notify(DOWNLOAD_NOTIF_ID, builder.build());
 
@@ -167,18 +170,9 @@ public class AcceptFileActionReceiver extends BroadcastReceiver {
     }
 
     /*
-    * Method to set feedback action to notification.
-    * */
-    private void addFeedbackAction(NotificationCompat.Builder builder) {
-        Intent feedbackIntent = new Intent(context, FeedbackActivity.class);
-        PendingIntent pi = PendingIntent.getActivity(context, 0, feedbackIntent, PendingIntent.FLAG_UPDATE_CURRENT);
-        builder.addAction(R.drawable.ic_action_feedback, "Send Feedback", pi);
-    }
-
-    /*
     * Method to update notification.
     * */
-    private void updateNotification(NotificationCompat.Builder builder, String content) {
+    private void updateNotification(String content) {
         builder.setContentText(content);
         builder.setProgress(0, 0, false);
         builder.setOngoing(false);

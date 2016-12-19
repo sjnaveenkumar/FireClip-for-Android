@@ -10,12 +10,10 @@ import io.realm.RealmConfiguration;
 import io.realm.RealmMigration;
 
 /**
+ * FireClip application class.
+ * <p>
  * Created by abara on 09/09/16.
  */
-
-/*
-* FireClip application class.
-* */
 public class FireClipApp extends Application {
 
     @Override

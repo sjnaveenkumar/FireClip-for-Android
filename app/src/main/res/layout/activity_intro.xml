@@ -46,7 +46,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
-            android:background="@drawable/google_btn_signin_light"
+            android:background="@drawable/btn_google_signin_light"
             android:text="@string/common_signin_button_text_long"
             android:textColor="@color/colorBlack" />
 

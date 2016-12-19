@@ -1,9 +1,9 @@
 package com.abara.fireclip.fragment;
 
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.Snackbar;
@@ -18,31 +18,26 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CompoundButton;
+import android.widget.Toast;
 
 import com.abara.fireclip.R;
 import com.abara.fireclip.service.ClipboardService;
-import com.abara.fireclip.util.Utils;
+import com.abara.fireclip.util.AndroidUtils;
+import com.abara.fireclip.util.FireClipUtils;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ServerValue;
-import com.jaredrummler.android.device.DeviceName;
 
 import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
+ * Fragment containing basic intro cards, manual update card, quick settings
+ * and current clipboard details.
+ * <p>
  * Created by abara on 08/09/16.
  */
-
-/*
-* Fragment containing Basic home items.
-* */
 public class HomeFragment extends Fragment implements View.OnClickListener, CompoundButton.OnCheckedChangeListener {
 
     private static final String TAG = HomeFragment.class.getSimpleName();
@@ -53,15 +48,25 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Comp
     private TextInputEditText manualUpdateContentBox;
     private SwitchCompat enableServiceSwitch, autoAcceptSwitch;
 
-    private DatabaseReference userClipRef;
     private FirebaseUser clipUser;
 
     private SharedPreferences preferences;
+    private Context context;
+
+    /**
+     * Attach the context.
+     */
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        this.context = context;
+    }
+
 
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        preferences = PreferenceManager.getDefaultSharedPreferences(getActivity().getApplicationContext());
+        preferences = AndroidUtils.getPreference(getActivity());
         clipUser = FirebaseAuth.getInstance().getCurrentUser();
         return inflater.inflate(R.layout.fragment_home, container, false);
     }
@@ -80,7 +85,7 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Comp
         enableServiceSwitch = (SwitchCompat) view.findViewById(R.id.quick_settings_card_1_switch);
         autoAcceptSwitch = (SwitchCompat) view.findViewById(R.id.quick_settings_card_2_switch);
 
-        boolean shouldShowInitialCard = preferences.getBoolean(Utils.INITIAL_CARD_KEY, true);
+        boolean shouldShowInitialCard = preferences.getBoolean(AndroidUtils.PREF_INITIAL_CARD, true);
         if (shouldShowInitialCard) {
             // Initialize initial card's components.
             initialCard = (CardView) view.findViewById(R.id.home_initial_card);
@@ -90,7 +95,7 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Comp
 
             initialCard.setVisibility(View.VISIBLE);
 
-            String deviceName = preferences.getString(Utils.DEVICE_NAME_KEY, DeviceName.getDeviceName());
+            String deviceName = AndroidUtils.getDeviceName(getActivity());
 
             gotItButton.setOnClickListener(this);
             initialCardTitleText.setText(getResources().getString(R.string.initial_card_title, clipUser.getDisplayName()));
@@ -103,25 +108,29 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Comp
 
     }
 
-    /*
-    * Load the preference values.
-    * */
+    /**
+     * Load preference values for quick settings here,
+     * to reflect the changes from SettingsActivity.
+     */
     @Override
     public void onStart() {
         super.onStart();
-        boolean enableService = preferences.getBoolean(Utils.ENABLE_SERVICE_KEY, true);
+        boolean enableService = preferences.getBoolean(AndroidUtils.PREF_ENABLE_SERVICE, true);
         enableServiceSwitch.setChecked(enableService);
 
-        boolean autoAcceptClip = preferences.getBoolean(Utils.AUTO_ACCEPT_KEY, false);
+        boolean autoAcceptClip = preferences.getBoolean(AndroidUtils.PREF_AUTO_ACCEPT, false);
         autoAcceptSwitch.setChecked(autoAcceptClip);
     }
 
+    /**
+     * Handle click events.
+     */
     @Override
     public void onClick(View view) {
         switch (view.getId()) {
             case R.id.initial_card_got_it_button:
                 initialCard.setVisibility(View.GONE);
-                preferences.edit().putBoolean(Utils.INITIAL_CARD_KEY, false).apply();
+                preferences.edit().putBoolean(AndroidUtils.PREF_INITIAL_CARD, false).apply();
                 break;
             case R.id.manual_update_card_button:
                 updateContentToFirebase();
@@ -130,40 +139,33 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Comp
 
     }
 
-    /*
-    * Update the clip to Firebase database.
-    * */
+    /**
+     * Update the content to FireClip database.
+     */
     private void updateContentToFirebase() {
-
-        userClipRef = FirebaseDatabase.getInstance().getReference("users").child(clipUser.getUid()).child("clip");
 
         final String content = manualUpdateContentBox.getText().toString();
 
         if (!content.isEmpty()) {
 
-            final String deviceName = preferences.getString(Utils.DEVICE_NAME_KEY, DeviceName.getDeviceName());
-
-            Map<String, Object> dataMap = new HashMap<>();
-            dataMap.put(Utils.DATA_MAP_CONTENT, content);
-            dataMap.put(Utils.DATA_MAP_FROM, deviceName);
-            dataMap.put(Utils.DATA_MAP_TIME, ServerValue.TIMESTAMP);
+            final String deviceName = AndroidUtils.getDeviceName(getActivity());
 
             Snackbar.make(getView(), "Updating...", Snackbar.LENGTH_SHORT).show();
 
-            final boolean shouldRemHistory = preferences.getBoolean(Utils.REM_MANUAL_HIS_KEY, false);
+            final boolean shouldRemHistory = preferences.getBoolean(AndroidUtils.PREF_REM_MANUAL_HIS, false);
 
-            userClipRef.setValue(dataMap).addOnCompleteListener(new OnCompleteListener<Void>() {
+            FireClipUtils.setClipValue(content, deviceName).addOnCompleteListener(new OnCompleteListener<Void>() {
                 @Override
                 public void onComplete(@NonNull Task<Void> task) {
-                    Snackbar.make(getView(), "Content updated!", Snackbar.LENGTH_SHORT).show();
+                    Toast.makeText(context, "Content updated!", Toast.LENGTH_SHORT).show();
                     manualUpdateContentBox.setText("");
                     if (shouldRemHistory)
-                        Utils.updateRealmDB(content, deviceName, new Date().getTime());
+                        AndroidUtils.addHistoryItem(content, deviceName, new Date().getTime());
                 }
             }).addOnFailureListener(new OnFailureListener() {
                 @Override
                 public void onFailure(@NonNull Exception e) {
-                    Snackbar.make(getView(), "Content failed to update!", Snackbar.LENGTH_SHORT).show();
+                    Toast.makeText(context, "Content failed to update!", Toast.LENGTH_SHORT).show();
                     Log.e(TAG, "onFailure: Reason: " + e.getMessage());
                 }
             });
@@ -171,15 +173,15 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Comp
 
     }
 
-    /*
-    * Save settings and enable (or) disable service.
-    * */
+    /**
+     * Save settings and enable (or) disable service.
+     */
     @Override
     public void onCheckedChanged(CompoundButton compoundButton, boolean checked) {
 
         switch (compoundButton.getId()) {
             case R.id.quick_settings_card_1_switch:
-                preferences.edit().putBoolean(Utils.ENABLE_SERVICE_KEY, checked).commit();
+                preferences.edit().putBoolean(AndroidUtils.PREF_ENABLE_SERVICE, checked).apply();
                 if (checked) {
                     getActivity().startService(new Intent(getActivity(), ClipboardService.class));
                 } else {
@@ -188,7 +190,7 @@ public class HomeFragment extends Fragment implements View.OnClickListener, Comp
                 autoAcceptSwitch.setEnabled(checked);
                 break;
             case R.id.quick_settings_card_2_switch:
-                preferences.edit().putBoolean(Utils.AUTO_ACCEPT_KEY, checked).commit();
+                preferences.edit().putBoolean(AndroidUtils.PREF_AUTO_ACCEPT, checked).apply();
                 break;
         }
 

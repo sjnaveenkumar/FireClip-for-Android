@@ -4,6 +4,7 @@ import android.app.ProgressDialog;
 import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -14,6 +15,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
 
+import com.abara.fireclip.util.FireClipUtils;
 import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
@@ -29,20 +31,20 @@ import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.GoogleAuthProvider;
 
 /**
+ * Activity shown first, and when logged out.
+ * <p>
  * Created by abara on 29/07/16.
  */
-
-/*
-* Activity shown first, and when logged out.
-* */
 public class IntroActivity extends AppCompatActivity implements View.OnClickListener, GoogleApiClient.OnConnectionFailedListener {
 
     private static final int RC_SIGN_IN = 9001;
-    private static final String TAG = IntroActivity.class.getSimpleName();
 
     private FirebaseAuth firebaseAuth;
     private FirebaseAuth.AuthStateListener authStateListener;
     private GoogleApiClient googleApiClient;
+
+    // Photo URL of the Google account.
+    private Uri photoUri;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -69,19 +71,28 @@ public class IntroActivity extends AppCompatActivity implements View.OnClickList
         googleSignInButton.setOnClickListener(this);
         emailSignInButton.setOnClickListener(this);
 
-        /*
-        * Listen for auth changes, start device activity after Google SignIn.
-        * */
+        /**
+         * Listen for auth changes, start device activity after Google SignIn.
+         */
         authStateListener = new FirebaseAuth.AuthStateListener() {
             @Override
             public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
 
-                FirebaseUser user = firebaseAuth.getCurrentUser();
+                final FirebaseUser user = firebaseAuth.getCurrentUser();
 
                 if (user != null) {
-                    Intent deviceActivity = new Intent(IntroActivity.this, DeviceNameActivity.class);
-                    deviceActivity.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
-                    startActivity(deviceActivity);
+
+                    FireClipUtils.updateUserDetails(null, photoUri)
+                            .addOnCompleteListener(IntroActivity.this, new OnCompleteListener<Void>() {
+                                @Override
+                                public void onComplete(@NonNull Task<Void> task) {
+                                    Intent deviceActivity = DeviceNameActivity.getStarterIntent(IntroActivity.this, false);
+                                    startActivity(deviceActivity);
+
+                                    // Subscribe to user's UID as topic, to receive push notifications.
+                                    FireClipUtils.subscribe();
+                                }
+                            });
                 }
 
             }
@@ -91,12 +102,20 @@ public class IntroActivity extends AppCompatActivity implements View.OnClickList
 
     }
 
+    /**
+     * Add auth state listener.
+     */
     @Override
     protected void onStart() {
         super.onStart();
         firebaseAuth.addAuthStateListener(authStateListener);
     }
 
+    /**
+     * Handle Sign in with email,
+     * Sign in with Google, and
+     * Create account.
+     */
     @Override
     public void onClick(View view) {
 
@@ -114,17 +133,17 @@ public class IntroActivity extends AppCompatActivity implements View.OnClickList
 
     }
 
-    /*
-    * Method to signin with Google.
-    * */
+    /**
+     * Sign in with Google account.
+     */
     private void signInWithGoogle() {
         Intent signinIntent = Auth.GoogleSignInApi.getSignInIntent(googleApiClient);
         startActivityForResult(signinIntent, RC_SIGN_IN);
     }
 
-    /*
-    * Receive result of Google Signin
-    * */
+    /**
+     * Handle results from Google Sign in.
+     */
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -135,6 +154,7 @@ public class IntroActivity extends AppCompatActivity implements View.OnClickList
 
             if (result.isSuccess()) {
                 GoogleSignInAccount account = result.getSignInAccount();
+                photoUri = account.getPhotoUrl();
                 firebaseAuthWithGoogle(account);
             } else {
                 Toast.makeText(IntroActivity.this, "Google Authentication failed!", Toast.LENGTH_SHORT).show();
@@ -144,9 +164,9 @@ public class IntroActivity extends AppCompatActivity implements View.OnClickList
 
     }
 
-    /*
-    * Signin to FireClip with Google account.
-    * */
+    /**
+     * Sign in to FireClip with Google account.
+     */
     private void firebaseAuthWithGoogle(GoogleSignInAccount account) {
 
         AuthCredential credential = GoogleAuthProvider.getCredential(account.getIdToken(), null);
@@ -164,7 +184,6 @@ public class IntroActivity extends AppCompatActivity implements View.OnClickList
 
                 if (!task.isSuccessful()) {
                     Toast.makeText(IntroActivity.this, "Google Authentication failed!", Toast.LENGTH_SHORT).show();
-                    Log.d(TAG, "onComplete: Firebase Auth failed for the user!");
                 }
                 dialog.dismiss();
 
@@ -173,9 +192,9 @@ public class IntroActivity extends AppCompatActivity implements View.OnClickList
 
     }
 
-    /*
-    * Remove auth listener.
-    * */
+    /**
+     * Remove the auth listener.
+     */
     @Override
     protected void onStop() {
         super.onStop();
@@ -184,8 +203,12 @@ public class IntroActivity extends AppCompatActivity implements View.OnClickList
         }
     }
 
+    /**
+     * Connection to GoogleApi failed.
+     * Just log it for now.
+     */
     @Override
     public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
-        Log.d(TAG, "GoogleApiClient connection failed due to -> " + connectionResult.getErrorMessage());
+        Log.d("IntroActivity", "GoogleApiClient connection failed due to -> " + connectionResult.getErrorMessage());
     }
 }

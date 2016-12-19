@@ -9,7 +9,7 @@
     <android.support.design.widget.AppBarLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:paddingTop="@dimen/padding_toolbar_top">
+        android:paddingTop="@dimen/toolbar_top_padding">
 
         <android.support.v7.widget.Toolbar
             android:id="@+id/toolbar"
@@ -29,13 +29,20 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:orientation="vertical"
+            android:orientation="horizontal"
             android:paddingBottom="8dp"
             android:paddingEnd="16dp"
             android:paddingLeft="16dp"
             android:paddingRight="16dp"
             android:paddingStart="16dp"
             android:paddingTop="8dp">
+
+            <android.support.v7.widget.AppCompatTextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:text="@string/history_filter"
+                android:textColor="@color/colorBlack" />
 
             <android.support.v7.widget.AppCompatSpinner
                 android:id="@+id/sort_by_spinner"

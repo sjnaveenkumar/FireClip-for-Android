@@ -54,6 +54,11 @@
         </activity>
 
         <service android:name=".service.ClipboardService" />
+        <service android:name=".service.NotificationService">
+            <intent-filter>
+                <action android:name="com.google.firebase.MESSAGING_EVENT" />
+            </intent-filter>
+        </service>
 
         <receiver android:name=".receiver.BootReceiver">
             <intent-filter>

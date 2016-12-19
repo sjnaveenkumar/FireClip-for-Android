@@ -40,7 +40,7 @@
             <android.support.design.widget.TextInputLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="@string/name_hint"
+                android:hint="@string/hint_name"
                 android:textColorHint="@color/colorWhite"
                 android:theme="@style/Theme.TextInputLayout">
 
@@ -57,7 +57,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
-                android:hint="@string/email_hint"
+                android:hint="@string/hint_email"
                 android:textColorHint="@color/colorWhite"
                 android:theme="@style/Theme.TextInputLayout">
 
@@ -74,7 +74,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
-                android:hint="@string/password_hint"
+                android:hint="@string/hint_password"
                 android:textColorHint="@color/colorWhite"
                 android:theme="@style/Theme.TextInputLayout"
                 app:passwordToggleTint="@color/colorWhite">
@@ -92,7 +92,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
-                android:hint="@string/confirm_password_hint"
+                android:hint="@string/hint_confirm_password"
                 android:textColorHint="@color/colorWhite"
                 android:theme="@style/Theme.TextInputLayout"
                 app:passwordToggleTint="@color/colorWhite">
@@ -114,7 +114,7 @@
                 android:clickable="true"
                 android:layout_marginTop="8dp"
                 android:padding="8dp"
-                android:text="@string/signup_button_text"
+                android:text="@string/btn_sign_up"
                 android:textColor="@color/colorBlack" />
         </LinearLayout>
     </LinearLayout>

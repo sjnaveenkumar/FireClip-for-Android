@@ -1,12 +1,10 @@
 package com.abara.fireclip;
 
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
 import android.provider.OpenableColumns;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -19,34 +17,31 @@ import android.view.Window;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
-import com.abara.fireclip.util.Utils;
+import com.abara.fireclip.util.AndroidUtils;
+import com.abara.fireclip.util.FireClipUtils;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.OnProgressListener;
 import com.google.firebase.storage.StorageMetadata;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
-import com.jaredrummler.android.device.DeviceName;
 
-import java.util.Map;
+import org.json.JSONException;
 
 /**
+ * <p>Activity shown as dialog for uploading files.
+ * Validate the file and upload it.
+ * If upload is success, notify all the devices.</p>
+ * <p>
  * Created by abara on 01/11/16.
  */
-
-/*
-* This activity is shown as a dialog for uploading files to FireClip.
-* Once uploaded, all devices are notified.
-* */
 public class FileUploadActivity extends AppCompatActivity implements View.OnClickListener {
 
+    /**
+     * File size limit is 5MB.
+     */
     private static final long FILE_SIZE_LIMIT = 5 * 1024 * 1024;
 
     private AppCompatButton cancelBtn;
@@ -54,7 +49,6 @@ public class FileUploadActivity extends AppCompatActivity implements View.OnClic
     private AppCompatTextView statusText;
 
     private UploadTask uploadTask;
-    private FirebaseUser user;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -64,17 +58,14 @@ public class FileUploadActivity extends AppCompatActivity implements View.OnClic
         setContentView(R.layout.activity_file_upload);
 
         statusText = (AppCompatTextView) findViewById(R.id.file_upload_status);
+        cancelBtn = (AppCompatButton) findViewById(R.id.file_upload_cancel);
+        cancelBtn.setOnClickListener(this);
 
         // To check whether the user is signed in or not.
-        user = FirebaseAuth.getInstance().getCurrentUser();
-        if (user != null) {
+        if (FireClipUtils.isUserSignedIn()) {
 
             // Upload only when device is online.
-            if (Utils.isOnline(this)) {
-
-                // Cancel button
-                cancelBtn = (AppCompatButton) findViewById(R.id.file_upload_cancel);
-                cancelBtn.setOnClickListener(this);
+            if (AndroidUtils.isOnline(this)) {
 
                 // Upload status text
                 statusText.setText(getResources().getString(R.string.file_upload_checking));
@@ -91,12 +82,17 @@ public class FileUploadActivity extends AppCompatActivity implements View.OnClic
 
                 // Getting file name and from content resolver.
                 Cursor cursor = getContentResolver().query(fileUri, null, null, null, null);
-                cursor.moveToFirst(); // TODO: Getting some error here on some file explorers (like CM filemanager). Have to fix that!
-                if (cursor.getCount() > 0) {
-                    fileName = cursor.getString(cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME));
-                    fileSize = cursor.getLong(cursor.getColumnIndex(OpenableColumns.SIZE));
+                try {
+                    cursor.moveToFirst(); // TODO: Getting some error here on some apps (like CM filemanager and whatsapp). Have to fix that!
+                    if (cursor.getCount() > 0) {
+                        fileName = cursor.getString(cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME));
+                        fileSize = cursor.getLong(cursor.getColumnIndex(OpenableColumns.SIZE));
+                    }
+                    cursor.close();
+                } catch (Exception e) {
+                    Toast.makeText(this, "File copy failed!", Toast.LENGTH_SHORT).show();
+                    return;
                 }
-                cursor.close();
                 // Check for file name and size.
                 if (fileSize != 0) {
 
@@ -115,9 +111,8 @@ public class FileUploadActivity extends AppCompatActivity implements View.OnClic
                         // Progressbar
                         progressBar = (ProgressBar) findViewById(R.id.file_upload_progress);
 
-                        FirebaseStorage storage = FirebaseStorage.getInstance();
-                        StorageReference userRef = storage.getReference("users").child(user.getUid()).child("my_file");
-                        uploadTask = userRef.putFile(fileUri, metaData);
+                        StorageReference fileRef = FireClipUtils.getFileStorageReference(fileName);
+                        uploadTask = fileRef.putFile(fileUri, metaData);
 
                         // Firebase Storage upload task
                         final String finalFileName = fileName;
@@ -130,10 +125,25 @@ public class FileUploadActivity extends AppCompatActivity implements View.OnClic
                             }
                         }).addOnSuccessListener(this, new OnSuccessListener<UploadTask.TaskSnapshot>() {
                             @Override
-                            public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                            public void onSuccess(final UploadTask.TaskSnapshot taskSnapshot) {
 
                                 // Sync to all devices.
-                                updateRealTimeDatabase(taskSnapshot, finalFileName);
+                                statusText.setText(getResources().getString(R.string.file_upload_syncing));
+                                FireClipUtils.syncFile(FileUploadActivity.this, taskSnapshot.getDownloadUrl(), finalFileName)
+                                        .addOnCompleteListener(FileUploadActivity.this, new OnCompleteListener<Void>() {
+                                            @Override
+                                            public void onComplete(@NonNull Task<Void> task) {
+
+                                                Toast.makeText(FileUploadActivity.this, "File copied!", Toast.LENGTH_SHORT).show();
+                                                try {
+                                                    FireClipUtils.sendFileNotification(FileUploadActivity.this, taskSnapshot.getDownloadUrl(), finalFileName);
+                                                } catch (JSONException e) {
+                                                    Toast.makeText(FileUploadActivity.this, "Copy failed!", Toast.LENGTH_SHORT).show();
+                                                }
+                                                finish();
+
+                                            }
+                                        });
 
                             }
 
@@ -180,33 +190,11 @@ public class FileUploadActivity extends AppCompatActivity implements View.OnClic
         }
     }
 
-    private void updateRealTimeDatabase(UploadTask.TaskSnapshot taskSnapshot, String fileName) {
-
-        statusText.setText(getResources().getString(R.string.file_upload_syncing));
-        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
-
-        String deviceName = preferences.getString(Utils.DEVICE_NAME_KEY, DeviceName.getDeviceName());
-
-        Uri downloadURL = taskSnapshot.getDownloadUrl();
-        Map<String, Object> map = Utils.generateMapClip(downloadURL.toString(), deviceName, fileName);
-
-        DatabaseReference fileRef = FirebaseDatabase.getInstance().getReference("users").child(user.getUid()).child("file");
-        fileRef.setValue(map).addOnCompleteListener(this, new OnCompleteListener<Void>() {
-            @Override
-            public void onComplete(@NonNull Task<Void> task) {
-
-                Toast.makeText(FileUploadActivity.this, "File copied!", Toast.LENGTH_SHORT).show();
-                finish();
-
-            }
-        });
-
-    }
-
+    /**
+     * Cancel the upload, if running and exit.
+     */
     @Override
     public void onClick(View view) {
-
-        // Cancel the task if progress is running.
         if (uploadTask != null && uploadTask.isInProgress()) {
             uploadTask.cancel();
             Toast.makeText(this, "Cancelled!", Toast.LENGTH_SHORT).show();

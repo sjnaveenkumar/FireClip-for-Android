@@ -80,7 +80,7 @@
                                 android:layout_height="wrap_content"
                                 android:layout_marginTop="8dp"
                                 android:lineSpacingExtra="4dp"
-                                android:text="Receive clips from devices you are signed in."
+                                android:text="Receive and send text or file."
                                 android:textAppearance="?android:attr/textAppearanceSmall" />
 
                         </LinearLayout>
@@ -244,7 +244,7 @@
                             <android.support.v7.widget.AppCompatTextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="Silent Notification"
+                                android:text="Do not disturb"
                                 android:textAppearance="?android:attr/textAppearanceSmall"
                                 android:textColor="@color/colorBlack" />
 

@@ -15,7 +15,7 @@ FireClip is backed by [Firebase](https://firebase.google.com/) and [Realm](https
 
 FireClip uses Firebase's...
 
-* Realtime database - Storing current clips and favourite clips.
+* Realtime database - Storing current clips and pinned clips.
 * Firebase Auth - Providing Google Signin and Email signin for Authentication.
 * Firebase storage - Sharing a file (limited size) across all of your devices.
 * Firebase messaging - For push notification
@@ -26,7 +26,7 @@ Realm object database is a simple alternative to SQLite and Core Data.
 We know that FireClip is still in beta. FireClip is still missing its main features to be implemented.
 
 * Encryption - Encrypt the clips while storing it to Firebase Database.
-* File transfer - Upload the newly copied file to Firebase storage by replacing the old file.
+* Top user benefits screen. See the [material guidelines](https://material.io/guidelines/growth-communications/onboarding.html#onboarding-top-user-benefits)
 
 ## <a name="aof"></a> Add a feature?
 You can request a new feature by submitting an issue to this [GitHub Repository](https://github.com/lvabarajithan/FireClip-for-Android/). 

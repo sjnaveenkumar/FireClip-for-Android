@@ -4,12 +4,12 @@ import io.realm.RealmObject;
 import io.realm.annotations.Index;
 
 /**
+ *
+ * Class that acts a table in Realm database.
+ * Each instance of this class is a row.
+ *
  * Created by abara on 08/09/16.
  */
-
-/*
-* A plain HistoryClip JAVA class
-* */
 public class HistoryClip extends RealmObject {
 
     private String content;

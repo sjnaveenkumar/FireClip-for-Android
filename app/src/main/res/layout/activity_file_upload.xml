@@ -31,6 +31,6 @@
         android:layout_height="45dp"
         android:layout_gravity="end"
         android:layout_marginTop="8dp"
-        android:text="@string/file_upload_cancel"
+        android:text="@string/action_cancel"
         android:textColor="@color/colorBlack" />
 </LinearLayout>

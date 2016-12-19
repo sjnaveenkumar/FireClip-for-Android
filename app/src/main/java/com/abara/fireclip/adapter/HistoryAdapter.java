@@ -1,7 +1,5 @@
 package com.abara.fireclip.adapter;
 
-import android.content.ClipData;
-import android.content.ClipboardManager;
 import android.content.Context;
 import android.os.Build;
 import android.support.v7.widget.RecyclerView;
@@ -14,27 +12,24 @@ import android.widget.LinearLayout;
 import android.widget.Toast;
 
 import com.abara.fireclip.R;
+import com.abara.fireclip.util.AndroidUtils;
 import com.abara.fireclip.util.HistoryClip;
 import com.abara.fireclip.util.ItemClickListener;
-import com.abara.fireclip.util.Utils;
 
 import io.realm.RealmResults;
 
 /**
+ * <p>Adapter to populate all history items.</p>
+ * <p>
  * Created by abara on 11/09/16.
  */
+public class HistoryAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
-/*
-* RecyclerView adapter to populate History items.
-* */
+    protected Context context;
+    protected RealmResults<HistoryClip> historyClips;
+    protected ItemClickListener itemClickListener;
 
-public class HistoryAdapter extends RecyclerView.Adapter<HistoryHolder> {
-
-    private Context context;
-    private RealmResults<HistoryClip> historyClips;
-    private ItemClickListener itemClickListener;
-
-    private LinearLayout lastTagLayout;
+    private LinearLayout lastHistoryLayout;
 
     public HistoryAdapter(Context context, RealmResults<HistoryClip> historyClips, ItemClickListener itemClickListener) {
         this.context = context;
@@ -43,23 +38,40 @@ public class HistoryAdapter extends RecyclerView.Adapter<HistoryHolder> {
     }
 
     @Override
-    public HistoryHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+    public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(context).inflate(R.layout.item_history, parent, false);
         return new HistoryHolder(view);
     }
 
     @Override
-    public void onBindViewHolder(final HistoryHolder holder, int position) {
+    public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
 
+        populateHistoryItems((HistoryHolder) holder, position);
+
+    }
+
+    public void expandItem(HistoryHolder holder) {
+        if (holder.pinItLayout.getVisibility() == View.GONE) {
+            if (lastHistoryLayout != null)
+                lastHistoryLayout.setVisibility(View.GONE);
+            lastHistoryLayout = holder.pinItLayout;
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+                TransitionManager.beginDelayedTransition(holder.card);
+            }
+            holder.pinItLayout.setVisibility(View.VISIBLE);
+        } else {
+            holder.pinItLayout.setVisibility(View.GONE);
+        }
+    }
+
+    protected void populateHistoryItems(final HistoryHolder holder, int position) {
         final HistoryClip clip = historyClips.get(position);
-        holder.from.setText(clip.getFrom() + " • " + Utils.getTimeSince(clip.getTimestamp()));
+        holder.from.setText(clip.getFrom() + " • " + AndroidUtils.getTimeSince(clip.getTimestamp()));
         holder.content.setText(clip.getContent());
         holder.copyButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                ClipData data = ClipData.newPlainText("FireClipText", clip.getContent());
-                ClipboardManager manager = (ClipboardManager) context.getSystemService(Context.CLIPBOARD_SERVICE);
-                manager.setPrimaryClip(data);
+                AndroidUtils.copyToClipboard(context, clip.getContent());
                 Toast.makeText(context, "Copied to clipboard!", Toast.LENGTH_SHORT).show();
             }
         });
@@ -73,27 +85,16 @@ public class HistoryAdapter extends RecyclerView.Adapter<HistoryHolder> {
         holder.itemLayout.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (holder.addToFavLayout.getVisibility() == View.GONE) {
-                    if (lastTagLayout != null)
-                        lastTagLayout.setVisibility(View.GONE);
-                    lastTagLayout = holder.addToFavLayout;
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-                        TransitionManager.beginDelayedTransition(holder.card);
-                    }
-                    holder.addToFavLayout.setVisibility(View.VISIBLE);
-                } else {
-                    holder.addToFavLayout.setVisibility(View.GONE);
-                }
+                expandItem(holder);
             }
         });
-        holder.favTag.setOnClickListener(new View.OnClickListener() {
+        holder.pinItText.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                itemClickListener.onFavouriteClick(clip.getContent(), clip.getFrom(), clip.getTimestamp());
+                itemClickListener.onAddPin(clip);
             }
         });
         Linkify.addLinks(holder.content, Linkify.ALL);
-
     }
 
     @Override

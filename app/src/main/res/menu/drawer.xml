@@ -3,16 +3,16 @@
 
     <group android:checkableBehavior="none">
         <item
-            android:id="@+id/ic_nav_action_settings"
+            android:id="@+id/nav_action_settings"
             android:icon="@drawable/ic_action_settings"
             android:title="@string/settings_text" />
         <item
-            android:id="@+id/ic_nav_action_tell"
+            android:id="@+id/nav_action_tell"
             android:icon="@drawable/ic_action_invite"
             android:title="@string/tell_friend_title" />
 
         <item
-            android:id="@+id/ic_nav_action_feedback"
+            android:id="@+id/nav_action_feedback"
             android:icon="@drawable/ic_action_feedback"
             android:title="@string/feedback_text" />
     </group>

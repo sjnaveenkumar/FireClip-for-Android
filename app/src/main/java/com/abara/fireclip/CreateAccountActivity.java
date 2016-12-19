@@ -14,6 +14,7 @@ import android.support.v7.widget.AppCompatButton;
 import android.view.View;
 import android.widget.Toast;
 
+import com.abara.fireclip.util.FireClipUtils;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
@@ -22,12 +23,10 @@ import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.UserProfileChangeRequest;
 
 /**
+ * Activity to Create a new FireClip account.
+ * <p>
  * Created by abara on 01/08/16.
  */
-
-/*
-* Activity to Create an account for FireClip.
-* */
 public class CreateAccountActivity extends AppCompatActivity implements View.OnClickListener {
 
     private FirebaseAuth firebaseAuth;
@@ -36,6 +35,7 @@ public class CreateAccountActivity extends AppCompatActivity implements View.OnC
     private String name;
 
     private TextInputEditText nameBox, emailBox, passBox, confirmPassBox;
+    private AppCompatButton createSignupBtn;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -48,36 +48,36 @@ public class CreateAccountActivity extends AppCompatActivity implements View.OnC
         emailBox = (TextInputEditText) findViewById(R.id.create_email_box);
         passBox = (TextInputEditText) findViewById(R.id.create_pass_box);
         confirmPassBox = (TextInputEditText) findViewById(R.id.create_pass_confirm_box);
-        AppCompatButton createSignupBtn = (AppCompatButton) findViewById(R.id.create_signup_btn);
+        createSignupBtn = (AppCompatButton) findViewById(R.id.create_signup_btn);
 
         createSignupBtn.setOnClickListener(this);
 
-        /*
-        * Listen for user authentication changes.
-        * */
+        /**
+         * Listen for user authentication changes.
+         */
         authStateListener = new FirebaseAuth.AuthStateListener() {
             @Override
             public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
 
-                final FirebaseUser user = firebaseAuth.getCurrentUser();
+                FirebaseUser user = firebaseAuth.getCurrentUser();
 
                 if (user != null) {
 
-                    /*
-                    * Update the user's name after account has been created.
-                    * */
-                    UserProfileChangeRequest changeRequest = new UserProfileChangeRequest.Builder()
-                            .setDisplayName(name).build();
+                    /**
+                     * Set the user's name after account has been created.
+                     */
+                    UserProfileChangeRequest changeRequest = new UserProfileChangeRequest.Builder().setDisplayName(name).build();
                     user.updateProfile(changeRequest).addOnCompleteListener(CreateAccountActivity.this, new OnCompleteListener<Void>() {
                         @Override
                         public void onComplete(@NonNull Task<Void> task) {
 
                             if (task.isSuccessful()) {
 
-                                Intent deviceActivity = new Intent(CreateAccountActivity.this, DeviceNameActivity.class);
-                                deviceActivity.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
+                                Intent deviceActivity = DeviceNameActivity.getStarterIntent(CreateAccountActivity.this, true);
                                 startActivity(deviceActivity);
 
+                                // Subscribe to user's UID as topic, to receive push notifications.
+                                FireClipUtils.subscribe();
                             }
 
                         }
@@ -90,18 +90,18 @@ public class CreateAccountActivity extends AppCompatActivity implements View.OnC
 
     }
 
-    /*
-    * Setup auth listener.
-    * */
+    /**
+     * Add auth listener.
+     */
     @Override
     protected void onStart() {
         super.onStart();
         firebaseAuth.addAuthStateListener(authStateListener);
     }
 
-    /*
-    * Validate and create account.
-    * */
+    /**
+     * Validate and create account.
+     */
     @Override
     public void onClick(View view) {
         name = nameBox.getText().toString();
@@ -123,6 +123,7 @@ public class CreateAccountActivity extends AppCompatActivity implements View.OnC
                     dialog.setCancelable(false);
                     dialog.show();
 
+                    // Create user
                     firebaseAuth.createUserWithEmailAndPassword(email, password).addOnCompleteListener(new OnCompleteListener<AuthResult>() {
                         @Override
                         public void onComplete(@NonNull Task<AuthResult> task) {
@@ -140,14 +141,14 @@ public class CreateAccountActivity extends AppCompatActivity implements View.OnC
                 Snackbar.make(findViewById(R.id.create_root_view), "Passwords mismatch!", Snackbar.LENGTH_SHORT).show();
             }
         } else {
-            Snackbar.make(findViewById(R.id.create_root_view), "Details(s) are missing!", Snackbar.LENGTH_SHORT).show();
+            Snackbar.make(findViewById(R.id.create_root_view), "Detail(s) are missing!", Snackbar.LENGTH_SHORT).show();
         }
 
     }
 
-    /*
-    * Remove auth listener.
-    * */
+    /**
+     * Remove auth listener.
+     */
     @Override
     protected void onStop() {
         super.onStop();
